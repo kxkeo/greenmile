@@ -1,0 +1,1 @@
+ALTER TABLE participants ADD COLUMN disabled INTEGER NOT NULL DEFAULT 0;

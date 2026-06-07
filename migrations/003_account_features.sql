@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN is_disabled INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT '';

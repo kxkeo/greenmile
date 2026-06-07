@@ -1,0 +1,22 @@
+name = "greenmile"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "greenmile-db"
+database_id = "abf681ba-77d5-408b-9c21-f26de003ff20"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "e9ad573917e84b10a5d3a40edc226625"
+
+[[r2_buckets]]
+binding = "SHOP_IMAGES"
+bucket_name = "greenmile-shop-images"
+
+[vars]
+SHOP_IMAGES_URL = "https://images.greenmileboosters.com"
+# Set STRIPE_SECRET_KEY as a secret in CF Pages: Settings → Environment Variables
+# VITE_STRIPE_PUBLISHABLE_KEY is baked into the JS bundle at build time (vite.config.js)

@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-charcoal-900 text-zinc-100 font-body antialiased;
+  }
+  ::selection {
+    @apply bg-field-500/40 text-white;
+  }
+  /* Custom scrollbar — dark + field green */
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: #0a0c0b; }
+  ::-webkit-scrollbar-thumb { background: #252c27; border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: #0c6e37; }
+}
+
+@layer components {
+  /* Big condensed display headline */
+  .display {
+    @apply font-display uppercase leading-[0.92] tracking-tight;
+  }
+  .eyebrow {
+    @apply font-heading uppercase tracking-[0.25em] text-xs font-semibold text-field-400;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-heading font-semibold uppercase tracking-wider
+           rounded-md transition-all duration-150 cursor-pointer select-none whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply btn bg-field-500 text-charcoal-900 hover:bg-field-400 shadow-glow hover:shadow-[0_0_55px_-6px_rgba(19,176,86,0.7)];
+  }
+  .btn-outline {
+    @apply btn border border-white/25 text-white hover:border-field-400 hover:text-field-300 bg-white/0 hover:bg-white/5;
+  }
+  .btn-ghost {
+    @apply btn text-zinc-300 hover:text-white;
+  }
+  .btn-lg { @apply text-base px-7 py-3.5; }
+  .btn-md { @apply text-sm px-5 py-2.5; }
+  .btn-sm { @apply text-xs px-3.5 py-2; }
+
+  /* Surface card */
+  .card {
+    @apply bg-charcoal-800 border border-white/[0.07] rounded-2xl;
+  }
+  .card-hover {
+    @apply card transition-all duration-200 hover:border-field-500/40 hover:-translate-y-1 hover:shadow-glow;
+  }
+
+  /* Form controls (dark) */
+  .label {
+    @apply block font-heading uppercase tracking-wider text-[0.7rem] text-zinc-400 mb-1.5;
+  }
+  .input {
+    @apply w-full bg-charcoal-900 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white
+           placeholder:text-zinc-500 outline-none focus:border-field-500 focus:ring-1 focus:ring-field-500 transition;
+  }
+
+  /* Page section wrapper */
+  .section {
+    @apply max-w-6xl mx-auto px-5 sm:px-8;
+  }
+}
