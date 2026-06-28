@@ -1,15 +1,13 @@
-// Centralized imagery. These are stock placeholders (Unsplash) — swap with real
-// Dinuba Emperors football photos by replacing the URLs below, or drop files in
-// /public and reference them as '/your-photo.jpg'. The dark design works even if
-// an image fails to load (the charcoal + field-line background carries it).
-const u = (id, w = 1920) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`
-
+// Imagery served locally from /public/img so nothing depends on a remote CDN.
+// These are Creative-Commons high-school-football placeholders — swap with real
+// Dinuba Emperors photos by replacing the files in /public/img (keep the same
+// names) or by changing the paths below. The dark design + green overlay carries
+// the look even if an image is missing.
 export const IMG = {
-  heroStadium: u('1566577739112-5180d4bf9390'),     // stadium under lights
-  fieldNight:  u('1577223625816-7546f13df25d'),     // ball on field
-  action:      u('1574629810360-7efbbe195018'),     // game action
-  huddle:      u('1471295253337-3ceaaedca402', 1600),  // stands / community energy
-  gear:        u('1607962837359-5e7e89f86776', 1200),// athletic gear
-  crowd:       u('1471295253337-3ceaaedca402'),      // stands / community
+  heroStadium: '/img/hero-run.jpg', // night runner breaking away — Home hero
+  fieldNight:  '/img/handoff.jpg',  // night handoff — Events hero
+  action:      '/img/tackle.jpg',   // open-field tackle — Team/cards
+  huddle:      '/img/runner.jpg',   // ball carrier — Volunteer hero
+  gear:        '/img/ball.jpg',     // football on the yard lines — Donate/Shop
+  crowd:       '/img/stadium.jpg',  // stands & flags — Boosters/community
 }
