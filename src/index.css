@@ -16,7 +16,7 @@
   ::-webkit-scrollbar { width: 11px; height: 11px; }
   ::-webkit-scrollbar-track { background: #0a0c0b; }
   ::-webkit-scrollbar-thumb { background: #252c27; border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: #0c6e37; }
+  ::-webkit-scrollbar-thumb:hover { background: #18532a; }
 }
 
 @layer components {
@@ -34,7 +34,7 @@
            rounded-md transition-all duration-150 cursor-pointer select-none whitespace-nowrap;
   }
   .btn-primary {
-    @apply btn bg-field-500 text-charcoal-900 hover:bg-field-400 shadow-glow hover:shadow-[0_0_55px_-6px_rgba(19,176,86,0.7)];
+    @apply btn bg-field-500 text-white hover:bg-field-700 shadow-glow hover:shadow-[0_0_55px_-6px_rgba(24,83,42,0.85)];
   }
   .btn-outline {
     @apply btn border border-white/25 text-white hover:border-field-400 hover:text-field-300 bg-white/0 hover:bg-white/5;

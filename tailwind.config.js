@@ -4,20 +4,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Field greens — brighter than DHRC's heritage green so this reads as
-        // its own brand against dark surfaces.
+        // Heritage green to match DHRC (dinubahomerun.club): #18532a primary,
+        // #0f3d1e dark. Lighter steps (300/400) are tints of the same green so
+        // green TEXT stays legible on the dark theme; 500–700 are the DHRC
+        // solid-fill greens for buttons and bands.
         field: {
-          50:  '#eafff1',
-          100: '#ccffdd',
-          200: '#9cf7bd',
-          300: '#5fe893',
-          400: '#28cf6a',
-          500: '#13b056', // primary accent
-          600: '#0c8c43',
-          700: '#0c6e37',
-          800: '#0e5630',
-          900: '#0c3d24',
-          950: '#04230f',
+          50:  '#eaf3ed',
+          100: '#cfe3d6',
+          200: '#a7cbb4',
+          300: '#74c08e', // light accent text on dark
+          400: '#4aa86a', // accent / eyebrow text
+          500: '#18532a', // DHRC heritage green (primary fill)
+          600: '#134320',
+          700: '#0f3d1e', // DHRC dark green
+          800: '#0b2e16',
+          900: '#082011',
+          950: '#04120a',
+        },
+        // Silver — DHRC's secondary (nav bar / accents).
+        silver: {
+          300: '#c4c6ca',
+          400: '#a8a9ad',
+          500: '#8b8d92',
         },
         // Charcoal / near-black surfaces.
         charcoal: {
@@ -35,7 +43,7 @@ export default {
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        glow: '0 0 40px -8px rgba(19,176,86,0.45)',
+        glow: '0 0 40px -8px rgba(24,83,42,0.55)',
       },
       backgroundImage: {
         'field-lines':

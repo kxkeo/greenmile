@@ -19,7 +19,7 @@ function Logo({ onClick }) {
         <span className="block font-display uppercase text-xl tracking-wide text-white group-hover:text-field-300 transition">
           Green Mile
         </span>
-        <span className="block font-heading uppercase tracking-[0.3em] text-[0.55rem] text-field-400 -mt-0.5">
+        <span className="block font-heading uppercase tracking-[0.3em] text-[0.55rem] text-silver-400 -mt-0.5">
           Boosters
         </span>
       </span>
