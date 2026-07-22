@@ -278,16 +278,17 @@ function DinnerRow({ dinner, onHost, onDonate }) {
         )}
       </div>
 
-      {/* Action */}
-      <div className="shrink-0 flex sm:flex-col gap-2 sm:items-end">
+      {/* Action — Booked / Host + Donate, all the same size. Host is white
+          until the date is claimed, then it becomes the green Booked block. */}
+      <div className="shrink-0 flex sm:flex-col gap-2 sm:w-44">
         {booked ? (
-          <span className="inline-flex items-center justify-center font-heading uppercase tracking-[0.12em] text-xs font-bold text-white bg-field-500 px-6 py-3">
+          <span className="flex-1 sm:w-full inline-flex items-center justify-center font-heading uppercase tracking-[0.12em] text-[0.9rem] font-bold text-white bg-field-500 px-6 py-3">
             ✓ Booked
           </span>
         ) : (
-          <Button onClick={onHost} variant="primary" size="sm">Host This Dinner</Button>
+          <Button onClick={onHost} size="sm" className="flex-1 sm:w-full !bg-white !text-field-700 hover:!bg-field-50">Host This Dinner</Button>
         )}
-        <Button onClick={onDonate} variant="outline" size="sm">Donate</Button>
+        <Button onClick={onDonate} variant="outline" size="sm" className="flex-1 sm:w-full">Donate</Button>
       </div>
     </div>
   )
