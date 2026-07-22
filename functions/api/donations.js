@@ -61,7 +61,7 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Invalid JSON' }, 400)
   }
 
-  const { firstName, lastName, email, amount, tierId, tierLabel, wantReceipt, referredPlayerId, address, city, state, zip } = body
+  const { firstName, lastName, email, amount, tierId, tierLabel, wantReceipt, referredPlayerId, address, city, state, zip, notes } = body
   const paymentIntentId = body.paymentIntentId || body.stripe_payment_intent || null
 
   if (!firstName?.trim()) return json({ error: 'First name required' }, 400)
@@ -104,8 +104,8 @@ export async function onRequestPost({ request, env }) {
   try {
     const row = await env.DB.prepare(`
       INSERT INTO donations
-        (first_name, last_name, email, amount_cents, tier_id, tier_label, want_receipt, payment_status, referred_player_id, address, city, state, zip, stripe_payment_intent)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?, ?)
+        (first_name, last_name, email, amount_cents, tier_id, tier_label, want_receipt, payment_status, referred_player_id, address, city, state, zip, notes, stripe_payment_intent)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?, ?, ?)
       RETURNING id
     `).bind(
       firstName.trim(),
@@ -120,6 +120,7 @@ export async function onRequestPost({ request, env }) {
       city?.trim() || null,
       state?.trim() || null,
       zip?.trim() || null,
+      notes?.trim() || null,
       paymentIntentId || null,
     ).first()
 

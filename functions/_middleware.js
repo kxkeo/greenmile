@@ -45,6 +45,8 @@ export async function onRequest(context) {
     // Registrations & donations public submit
     '/api/registrations/golf',
     '/api/registrations/camp',
+    // Public payment-intent for donations & business sponsorships (no login)
+    '/api/donations/payment-intent',
   ]
   if (open.some(p => url.pathname === p || url.pathname.startsWith(p + '/'))) return next()
 

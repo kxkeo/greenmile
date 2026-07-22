@@ -9,9 +9,11 @@ import Boosters from './pages/Boosters'
 import Team from './pages/Team'
 import Events from './pages/Events'
 import CountryNights from './pages/CountryNights'
+import EventDetail from './pages/EventDetail'
 import EventCheckout from './pages/EventCheckout'
 import Volunteer from './pages/Volunteer'
 import Sponsors from './pages/Sponsors'
+import SponsorDetail from './pages/SponsorDetail'
 import Donate from './pages/Donate'
 import DonateCheckout from './pages/DonateCheckout'
 import Shop from './pages/Shop'
@@ -39,8 +41,10 @@ export default function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/events/country-nights" element={<CountryNights />} />
             <Route path="/events/register/:id" element={<EventCheckout />} />
+            <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/sponsors" element={<Sponsors />} />
+            <Route path="/sponsors/:slug" element={<SponsorDetail />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/donate/checkout" element={<DonateCheckout />} />
             <Route path="/shop" element={<Shop />} />

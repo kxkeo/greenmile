@@ -1,46 +1,12 @@
+import { Link } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, CTABand } from '../components/ui'
 import { IMG } from '../content/images'
+import { SPONSOR_TIERS } from '../content/sponsorTiers'
 
 // Sponsorship packages for local businesses — mirrors the printed
-// Green Mile Boosters sponsor flyer.
+// Green Mile Boosters sponsor flyer. Tier data lives in content/sponsorTiers.
 
-const TIERS = [
-  {
-    name: 'Emperor Sponsor',
-    price: '$1,000',
-    featured: true,
-    perks: [
-      'Banner displayed on the field at every home game',
-      '½-page business card in the home game program',
-      'Entry for TWO at every home game',
-      '2 food vouchers per game',
-      '2 custom DINUBA hats',
-      '2 Green Mile Boosters sponsor t-shirts',
-      'Shout-out on the Green Mile Boosters social media',
-      'Announced at home games over the PA system',
-    ],
-  },
-  {
-    name: 'Green Sponsor',
-    price: '$500',
-    perks: [
-      'Personal banner displayed on the field at every home game',
-      'Business card in the home game program',
-      'Free entry for 4 to any ONE home game',
-      'Shout-out on the Green Mile Boosters social media',
-      'Announced at home games over the PA system',
-    ],
-  },
-  {
-    name: 'Silver Sponsor',
-    price: '$300',
-    perks: [
-      'Personal banner displayed on the field at every home game',
-      'Free entry for 2 to any ONE home game',
-      'Announced at home games over the PA system',
-    ],
-  },
-]
+const TIERS = SPONSOR_TIERS
 
 const CONTACTS = [
   { name: 'Coach Lester', role: 'Head of Program', icon: '📞',
@@ -71,8 +37,8 @@ export default function Sponsors() {
         />
         <div className="mt-12 grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto items-start">
           {TIERS.map(t => (
-            <div key={t.name}
-              className={`relative rounded-2xl p-7 ${t.featured
+            <div key={t.slug}
+              className={`relative rounded-2xl p-7 flex flex-col shadow-card ${t.featured
                 ? 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50 shadow-glow'
                 : 'card'}`}>
               {t.featured && (
@@ -83,7 +49,7 @@ export default function Sponsors() {
               <div className="font-heading uppercase tracking-wider text-sm text-zinc-300">{t.name}</div>
               <div className="display text-5xl text-white mt-2">{t.price}</div>
               <div className="text-xs text-zinc-400 mb-5">per season</div>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm flex-1">
                 {t.perks.map(p => (
                   <li key={p} className={`flex gap-2 ${t.featured ? 'text-field-50' : 'text-zinc-200'}`}>
                     <span className="text-field-400 shrink-0">✓</span><span>{p}</span>
@@ -92,17 +58,17 @@ export default function Sponsors() {
               </ul>
               <div className="mt-7">
                 <Button
-                  href={`mailto:info@greenmileboosters.org?subject=${encodeURIComponent(`${t.name} — Sponsorship Inquiry`)}`}
+                  to={`/sponsors/${t.slug}`}
                   variant={t.featured ? 'outline' : 'primary'} size="md"
                   className={`w-full ${t.featured ? '!border-white/40 !text-white hover:!bg-white/10' : ''}`}>
-                  Become {t.name.startsWith('E') ? 'an' : 'a'} {t.name.split(' ')[0]} Sponsor
+                  Become {t.slug === 'emperor' ? 'an' : 'a'} {t.name.split(' ')[0]} Sponsor
                 </Button>
               </div>
             </div>
           ))}
         </div>
         <p className="mt-8 text-center text-sm text-zinc-500">
-          The Green Mile Boosters is a registered nonprofit — sponsorships are tax-deductible where applicable. Tax ID 92-2360865.
+          The Green Mile Boosters is a registered nonprofit — sponsorships are tax-deductible where applicable. EIN 92-2360865.
         </p>
       </section>
 

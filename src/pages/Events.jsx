@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, Loading } from '../components/ui'
 import { IMG } from '../content/images'
 
@@ -45,24 +46,24 @@ export default function Events() {
           <>
             <SectionHeading eyebrow="Happening now" title="Register & Attend" />
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {events.map((e, i) => (
-                <div key={e.id || i} className="card-hover overflow-hidden">
-                  <div className="bg-cover bg-center h-40"
-                       style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.action})` }} />
-                  <div className="p-6">
-                    {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
-                    <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
-                    {e.description && <p className="mt-2 text-sm text-zinc-400 leading-relaxed line-clamp-3">{e.description}</p>}
-                    <div className="mt-5">
-                      <Button
-                        to={String(e.meta?.slug || '').startsWith('country-nights') ? '/events/country-nights' : `/events/register/${e.id}`}
-                        size="sm">
-                        {e.price_cents ? 'Get Tickets' : 'Register'}
-                      </Button>
+              {events.map((e, i) => {
+                const infoTo = String(e.meta?.slug || '').startsWith('country-nights')
+                  ? '/events/country-nights' : `/events/${e.id}`
+                return (
+                  <Link key={e.id || i} to={infoTo} className="card-hover overflow-hidden block group">
+                    <div className="bg-cover bg-center h-40 transition-transform duration-300 group-hover:scale-[1.03]"
+                         style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.action})` }} />
+                    <div className="p-6">
+                      {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
+                      <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
+                      {e.description && <p className="mt-2 text-sm text-zinc-400 leading-relaxed line-clamp-3">{e.description}</p>}
+                      <div className="mt-5">
+                        <span className="btn btn-primary btn-sm">{e.price_cents ? 'Get Tickets' : 'Register'}</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
             <div className="mt-16">
               <SectionHeading eyebrow="On the calendar" title="Season at a Glance" />
