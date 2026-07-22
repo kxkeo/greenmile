@@ -20,7 +20,9 @@ const CARD_STYLES = {
     card: 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50',
     name: 'text-field-100', price: 'text-white', per: 'text-field-50/80',
     perk: 'text-field-50', check: 'text-field-200',
-    btnVariant: 'outline', btnClass: '!border-white/50 !text-white hover:!bg-white/10',
+    // White solid button so it stands out on the green card (green-on-green
+    // wouldn't read); keeps all three tier buttons solid + substantial.
+    btnVariant: 'primary', btnClass: '!bg-white !text-field-800 hover:!bg-field-50',
   },
   silver: {
     card: 'bg-gradient-to-b from-zinc-200 to-zinc-400 border border-white/40',

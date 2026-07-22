@@ -1,6 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  // The <Button> component builds class names dynamically (`btn-${variant}`,
+  // `btn-${size}`), so Tailwind's scanner can't see them and would purge the
+  // component classes. Safelist guarantees they're always generated — without
+  // this, `btn-md` gets dropped and every medium button loses its padding.
+  safelist: [
+    'btn-primary', 'btn-outline', 'btn-ghost',
+    'btn-lg', 'btn-md', 'btn-sm',
+  ],
   theme: {
     extend: {
       colors: {
