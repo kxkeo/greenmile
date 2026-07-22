@@ -120,7 +120,7 @@ export async function onRequestPost({ request, env }) {
         firstName: firstName.trim(), lastName: lastName.trim(),
         isParticipant: true,
       }),
-      { expirationTtl: 60 * 5 }
+      { expirationTtl: 60 * 15 }
     )
 
     const res = json({
@@ -134,7 +134,7 @@ export async function onRequestPost({ request, env }) {
 
     const headers = new Headers(res.headers)
     headers.set('Set-Cookie',
-      `participant_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60*5}`)
+      `participant_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60*15}`)
     return new Response(res.body, { status: 201, headers })
 
   } catch (e) {

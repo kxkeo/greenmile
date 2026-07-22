@@ -29,11 +29,12 @@ export async function onRequestPost({ request, env }) {
   const dinnerId = parseInt(body.dinnerId, 10)
   if (!dinnerId) return json({ error: 'Which dinner?' }, 400)
 
-  const bringFood     = body.bringFood ? 1 : 0
-  const bringDrinks   = body.bringDrinks ? 1 : 0
-  const bringDesserts = body.bringDesserts ? 1 : 0
-  const hostLocation  = (body.hostLocation || '').toString().trim().slice(0, 200) || null
-  const notes         = (body.notes || '').toString().trim().slice(0, 1000) || null
+  // Hosting a dinner means providing food, drinks, AND desserts — it's not a
+  // pick-list anymore.
+  const address     = (body.address || '').toString().trim().slice(0, 300) || null
+  const hostOverride = (body.hostNames || '').toString().trim().slice(0, 200) || null
+  const notes        = (body.notes || '').toString().trim().slice(0, 1000) || null
+  if (!address) return json({ error: 'Please add the address where the dinner will be held.' }, 400)
 
   try {
     // Pull the participant's profile for the host name + contact info.
@@ -49,21 +50,22 @@ export async function onRequestPost({ request, env }) {
     if (dinner.is_bye === 1)   return json({ error: 'That is a bye week — no game, no dinner.' }, 400)
     if (dinner.status !== 'open') return json({ error: 'Sorry — that dinner has already been claimed.' }, 409)
 
-    const hostNames = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Emperor Family'
+    const hostNames = hostOverride || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Emperor Family'
 
     // Atomic claim — only succeeds if the row is still open, so a race between
-    // two parents can only book one of them.
+    // two parents can only book one of them. Hosting always provides all three
+    // (food, drinks, desserts).
     const upd = await env.DB.prepare(
       `UPDATE team_dinners
-         SET status = 'booked', participant_id = ?, host_names = ?, host_location = ?,
+         SET status = 'booked', participant_id = ?, host_names = ?, address = ?,
              host_email = ?, host_phone = ?,
-             bring_food = ?, bring_drinks = ?, bring_desserts = ?, notes = ?,
+             bring_food = 1, bring_drinks = 1, bring_desserts = 1, notes = ?,
              booked_at = CURRENT_TIMESTAMP
        WHERE id = ? AND status = 'open'`
     ).bind(
-      participantId, hostNames, hostLocation,
+      participantId, hostNames, address,
       p.email || null, p.phone || null,
-      bringFood, bringDrinks, bringDesserts, notes,
+      notes,
       dinnerId
     ).run()
 
@@ -79,10 +81,7 @@ export async function onRequestPost({ request, env }) {
         opponent:   dinner.opponent,
         dinnerDate: dinner.dinner_date,
         gameDate:   dinner.game_date,
-        hostLocation,
-        bringFood:  !!bringFood,
-        bringDrinks:!!bringDrinks,
-        bringDesserts: !!bringDesserts,
+        address,
         notes,
       })
       await sendEmail(env, { to: emailTo, ...tpl }).catch(() => {})

@@ -846,10 +846,9 @@ export function raffleTicketEmail({ firstName, ticketQty, totalCents, paymentSta
 
 // ── Team Dinner Host Confirmation ───────────────────────────────────────────
 // Sent when a parent signs up to host the Thursday team dinner before a game.
-export function teamDinnerEmail({ firstName, opponent, dinnerDate, gameDate, hostLocation, bringFood, bringDrinks, bringDesserts, notes }) {
+export function teamDinnerEmail({ firstName, opponent, dinnerDate, gameDate, address, notes }) {
   const dinnerLabel = longDate(dinnerDate)
   const gameLabel   = longDate(gameDate)
-  const bringing = [bringFood && 'Food', bringDrinks && 'Drinks', bringDesserts && 'Desserts'].filter(Boolean)
 
   const hero = `
     <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:30px 28px 26px;text-align:center;">
@@ -873,15 +872,15 @@ export function teamDinnerEmail({ firstName, opponent, dinnerDate, gameDate, hos
           ${dinnerLabel ? `<div class="info-row"><span class="info-label">Dinner (Thu):</span><span class="info-value">${dinnerLabel}</span></div>` : ''}
           ${opponent ? `<div class="info-row"><span class="info-label">Game vs:</span><span class="info-value">${esc(opponent)}</span></div>` : ''}
           ${gameLabel ? `<div class="info-row"><span class="info-label">Game (Fri):</span><span class="info-value">${gameLabel}</span></div>` : ''}
-          ${hostLocation ? `<div class="info-row"><span class="info-label">Location:</span><span class="info-value">${esc(hostLocation)}</span></div>` : ''}
-          ${bringing.length ? `<div class="info-row"><span class="info-label">Providing:</span><span class="info-value">${bringing.map(esc).join(', ')}</span></div>` : ''}
+          ${address ? `<div class="info-row"><span class="info-label">Address:</span><span class="info-value">${esc(address)}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">Providing:</span><span class="info-value">Food, Drinks &amp; Desserts</span></div>
         </div>
 
         ${notes ? `<div class="notice"><p><strong>Your note:</strong> ${esc(notes)}</p></div>` : ''}
 
         <div class="impact-bar">
           <p class="impact-bar-title">Good to Know</p>
-          <p>Dinners are planned for <strong>25&ndash;50 athletes and coaches</strong>. Plan your menu, pick your spot, and rally a few other families to pitch in on food, drinks, and dessert. Questions? We're here to help.</p>
+          <p>Hosting means providing <strong>food, drinks, and desserts</strong> for <strong>25&ndash;50 athletes and coaches</strong>. Plan your menu and rally a few other families to pitch in. Questions? We're here to help.</p>
         </div>
 
         <a href="https://greenmileboosters.org/parents" class="btn">VIEW THE DINNER CALENDAR</a>

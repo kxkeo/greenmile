@@ -12,9 +12,8 @@ const NAV = [
   { to: '/parents', label: 'Parents' },
 ]
 
-// Footer keeps the fuller set so Donate and Shop stay reachable even though
-// they're no longer in the top nav.
-const FOOTER_NAV = [...NAV, { to: '/donate', label: 'Donate' }, { to: '/shop', label: 'Shop' }]
+// Explore lists the live site pages (same as the top nav).
+const FOOTER_NAV = NAV
 
 function Logo({ onClick }) {
   return (
@@ -55,6 +54,32 @@ function Header() {
       .catch(() => setParticipant(null))
   }, [location.pathname])
 
+  const logout = async () => {
+    // Clear UI immediately so the button feels instant, then drop the session.
+    setParticipant(null)
+    setOpen(false)
+    await fetch('/api/auth/participant-logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    navigate('/')
+  }
+
+  // Auto-logout after 15 minutes of inactivity (sliding). Any interaction
+  // resets the timer; matches the 15-minute server session window.
+  useEffect(() => {
+    if (!participant) return
+    let timer
+    const reset = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => { logout() }, 15 * 60 * 1000)
+    }
+    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart']
+    events.forEach(e => window.addEventListener(e, reset, { passive: true }))
+    reset()
+    return () => {
+      clearTimeout(timer)
+      events.forEach(e => window.removeEventListener(e, reset))
+    }
+  }, [participant]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const linkClass = ({ isActive }) =>
     `relative font-heading uppercase tracking-wide text-sm py-2 transition-colors ${
       isActive ? 'text-white' : 'text-white/75 hover:text-white'
@@ -84,13 +109,15 @@ function Header() {
 
         <div className="hidden lg:flex items-center gap-3">
           {participant ? (
-            <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white hover:bg-white/10">
-              Hi, {participant.firstName}
-            </Link>
+            <>
+              <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white hover:bg-white/10">
+                Hi, {participant.firstName}
+              </Link>
+              <button onClick={logout} className="btn btn-sm bg-white text-field-700 hover:bg-field-50">Log Out</button>
+            </>
           ) : (
-            <Link to="/my-account/login" className="btn btn-sm text-white/85 hover:text-white">Log in</Link>
+            <Link to="/my-account/login" className="btn btn-sm bg-white text-field-700 hover:bg-field-50">Log In</Link>
           )}
-          <Link to="/volunteer" className="btn btn-sm bg-white text-field-700 hover:bg-field-50">Join</Link>
         </div>
 
         {/* Mobile toggle */}
@@ -124,11 +151,13 @@ function Header() {
           ))}
           <div className="flex gap-3 px-6 py-4 border-t border-black/20">
             {participant ? (
-              <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white flex-1">My Account</Link>
+              <>
+                <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white flex-1">My Account</Link>
+                <button onClick={logout} className="btn btn-sm bg-white text-field-700 hover:bg-field-50 flex-1">Log Out</button>
+              </>
             ) : (
-              <Link to="/my-account/login" className="btn btn-sm border-2 border-white/50 text-white flex-1">Log in</Link>
+              <Link to="/my-account/login" className="btn btn-sm bg-white text-field-700 hover:bg-field-50 flex-1">Log In</Link>
             )}
-            <Link to="/volunteer" className="btn btn-sm bg-white text-field-700 hover:bg-field-50 flex-1">Join</Link>
           </div>
         </nav>
       )}
@@ -184,7 +213,7 @@ function Footer() {
               <li><Link to="/volunteer" className="text-zinc-400 hover:text-field-400 transition">Volunteer</Link></li>
               <li><Link to="/donate" className="text-zinc-400 hover:text-field-400 transition">Donate</Link></li>
               <li><Link to="/sponsors" className="text-zinc-400 hover:text-field-400 transition">Sponsor the team</Link></li>
-              <li><Link to="/my-account/signup" className="text-zinc-400 hover:text-field-400 transition">Become a member</Link></li>
+              <li><Link to="/parents" className="text-zinc-400 hover:text-field-400 transition">Team dinners</Link></li>
               <li><a href="mailto:info@greenmileboosters.org" className="text-zinc-400 hover:text-field-400 transition">Contact us</a></li>
             </ul>
           </div>

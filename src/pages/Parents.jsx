@@ -80,6 +80,31 @@ export default function Parents() {
         <Button href="#calendar" size="lg">See the Calendar</Button>
       </Hero>
 
+      {/* Appreciation — parents are the backbone */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-field-700 to-field-900 border-b border-white/[0.06]">
+        <div className="absolute inset-0 bg-field-lines opacity-40" />
+        <div className="relative section py-16 text-center max-w-3xl">
+          <Eyebrow className="mb-3 !text-field-200">You Are the Backbone</Eyebrow>
+          <h2 className="display text-white text-3xl sm:text-4xl">None of This Happens Without You</h2>
+          <p className="mt-5 text-field-50/90 leading-relaxed text-lg">
+            In a town like Dinuba, Friday night lights aren't run by a big budget — they're
+            carried by parents. The meals before every game, the rides, the fundraisers, the
+            full stands, the little things nobody sees: that's you. You are the reason these
+            boys get to just be players and chase something together.
+          </p>
+          <p className="mt-4 text-field-50/90 leading-relaxed">
+            The boosters can raise every dollar we can, but it's <strong className="text-white">Emperor
+            parents</strong> who keep the program running week to week. When you host a dinner, sign up
+            for a shift, or simply show up, you're building the brotherhood on the field and the
+            community around it. We couldn't do a single Friday night without you — and we don't take
+            it for granted. Thank you for showing up for our kids.
+          </p>
+          <p className="mt-6 font-heading uppercase tracking-[0.2em] text-sm text-field-200">
+            Together, we are Emperor Football.
+          </p>
+        </div>
+      </section>
+
       {/* Why it matters */}
       <section className="section py-16">
         <SectionHeading eyebrow="Building brotherhood beyond the field" title="Why Team Dinners" />
@@ -146,6 +171,7 @@ export default function Parents() {
       {booking && (
         <BookModal
           dinner={booking}
+          participant={participant}
           onClose={() => setBooking(null)}
           onBooked={() => onBooked(booking)}
         />
@@ -212,7 +238,8 @@ function DinnerRow({ dinner, onHost }) {
         {booked ? (
           <div className="mt-1.5 text-sm text-field-300">
             Hosted by <span className="text-zinc-200">{dinner.hostNames || 'an Emperor family'}</span>
-            {dinner.hostLocation ? <span className="text-zinc-500"> · {dinner.hostLocation}</span> : null}
+            {dinner.address ? <span className="text-zinc-500"> · {dinner.address}</span>
+              : dinner.hostLocation ? <span className="text-zinc-500"> · {dinner.hostLocation}</span> : null}
           </div>
         ) : (
           <div className="mt-1.5 text-sm text-zinc-400">Open — this dinner needs a host.</div>
@@ -233,14 +260,16 @@ function DinnerRow({ dinner, onHost }) {
   )
 }
 
-function BookModal({ dinner, onClose, onBooked }) {
-  const [form, setForm] = useState({ food: false, drinks: false, desserts: false, location: '', notes: '' })
+function BookModal({ dinner, participant, onClose, onBooked }) {
+  const defaultHost = `${participant?.firstName || ''} ${participant?.lastName || ''}`.trim()
+  const [form, setForm] = useState({ hostNames: defaultHost, address: '', notes: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const submit = async (e) => {
     e.preventDefault()
+    if (!form.address.trim()) { setError('Please add the address where the dinner will be held.'); return }
     setError(''); setBusy(true)
     try {
       const res = await fetch('/api/team-dinners/book', {
@@ -249,10 +278,8 @@ function BookModal({ dinner, onClose, onBooked }) {
         credentials: 'include',
         body: JSON.stringify({
           dinnerId: dinner.id,
-          bringFood: form.food,
-          bringDrinks: form.drinks,
-          bringDesserts: form.desserts,
-          hostLocation: form.location.trim(),
+          hostNames: form.hostNames.trim(),
+          address: form.address.trim(),
           notes: form.notes.trim(),
         }),
       })
@@ -273,23 +300,18 @@ function BookModal({ dinner, onClose, onBooked }) {
         <h2 className="display text-white text-3xl">vs {dinner.opponent}</h2>
         <p className="mt-1 text-sm text-zinc-400">Dinner {longDay(dinner.dinnerDate)} · game {longDay(dinner.gameDate)}</p>
 
-        <form onSubmit={submit} className="mt-6 space-y-5">
+        <div className="mt-5 rounded-lg bg-field-900/30 border border-field-500/25 px-4 py-3 text-sm text-field-100">
+          Hosting means providing <strong>food, drinks, and desserts</strong> for 25–50 athletes and coaches.
+        </div>
+
+        <form onSubmit={submit} className="mt-5 space-y-5">
           <div>
-            <label className="label">What can you provide? <span className="text-zinc-600 normal-case">(check all that apply)</span></label>
-            <div className="grid grid-cols-3 gap-2">
-              {[['food', '🍽️ Food'], ['drinks', '🥤 Drinks'], ['desserts', '🍰 Desserts']].map(([k, lbl]) => (
-                <button type="button" key={k} onClick={() => set(k, !form[k])}
-                  className={`rounded-lg border px-3 py-2.5 text-sm font-heading uppercase tracking-wide transition ${
-                    form[k] ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-900 border-white/10 text-zinc-400 hover:border-white/25'
-                  }`}>
-                  {lbl}
-                </button>
-              ))}
-            </div>
+            <label className="label">Who's hosting</label>
+            <input className="input" value={form.hostNames} onChange={e => set('hostNames', e.target.value)} placeholder="Your name or family/group" />
           </div>
           <div>
-            <label className="label">Location <span className="text-zinc-600 normal-case">(optional)</span></label>
-            <input className="input" value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Our house, the team room…" />
+            <label className="label">Address</label>
+            <input className="input" value={form.address} onChange={e => set('address', e.target.value)} placeholder="Where the dinner will be held" required />
           </div>
           <div>
             <label className="label">Notes for the coaches <span className="text-zinc-600 normal-case">(optional)</span></label>

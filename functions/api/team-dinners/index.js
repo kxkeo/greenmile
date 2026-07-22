@@ -12,8 +12,7 @@ export async function onRequestGet({ env }) {
   try {
     const { results } = await env.DB.prepare(
       `SELECT id, dinner_date, game_date, opponent, is_bye, status,
-              host_names, host_location,
-              bring_food, bring_drinks, bring_desserts
+              host_names, host_location, address
        FROM team_dinners
        ORDER BY dinner_date ASC`
     ).all()
@@ -27,9 +26,7 @@ export async function onRequestGet({ env }) {
       status:        r.status,
       hostNames:     r.host_names,
       hostLocation:  r.host_location,
-      bringFood:     r.bring_food === 1,
-      bringDrinks:   r.bring_drinks === 1,
-      bringDesserts: r.bring_desserts === 1,
+      address:       r.address,
     }))
 
     return json({ dinners })

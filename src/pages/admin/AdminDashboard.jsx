@@ -211,6 +211,7 @@ function EventsSection() {
         )}
       </div>
       <SeasonCalendarEditor />
+      <TeamDinnersEditor />
     </div>
   )
 }
@@ -304,6 +305,99 @@ function SeasonCalendarEditor() {
             <Button size="md" onClick={save} disabled={busy === 'save'}>{busy === 'save' ? 'Saving…' : 'Save Calendar'}</Button>
             <Button size="md" variant="outline" onClick={reset} disabled={busy === 'reset'}>{busy === 'reset' ? 'Resetting…' : 'Reset to Default'}</Button>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Editor for the Parents-page team-dinner schedule: who's hosting + address.
+function TeamDinnersEditor() {
+  const [dinners, setDinners] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const [busyId, setBusyId] = useState(null)
+
+  const load = () =>
+    getJSON('/api/admin/team-dinners')
+      .then(d => setDinners(Array.isArray(d?.dinners) ? d.dinners : []))
+      .catch(() => setDinners([]))
+  useEffect(() => { load() }, [])
+
+  const update = (id, key, val) =>
+    setDinners(dinners.map(d => d.id === id ? { ...d, [key]: val } : d))
+
+  const save = async (d, opts = {}) => {
+    setMsg(null); setBusyId(d.id)
+    try {
+      const res = await fetch('/api/admin/team-dinners', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({
+          id: d.id,
+          hostNames: opts.reopen ? '' : (d.hostNames || ''),
+          address:   opts.reopen ? '' : (d.address || ''),
+          notes:     d.notes || '',
+          status:    opts.reopen ? 'open' : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Save failed')
+      await load()
+      setMsg({ ok: true, text: opts.reopen ? 'Dinner reopened.' : 'Saved.' })
+    } catch (e) { setMsg({ ok: false, text: e.message }) } finally { setBusyId(null) }
+  }
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h2 className="font-heading uppercase tracking-wide text-white">Team Dinners</h2>
+        <p className="text-xs text-zinc-500 mt-1">Who's hosting each Thursday dinner (Parents page). Hosting provides food, drinks &amp; desserts. Set a host name + address, or reopen a date.</p>
+      </div>
+
+      {msg && (
+        <div className={`mb-4 rounded-lg text-sm px-4 py-3 border ${msg.ok
+          ? 'bg-field-900/40 border-field-500/30 text-field-300'
+          : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>{msg.text}</div>
+      )}
+
+      {dinners === null ? <Loading label="Loading team dinners…" /> : (
+        <div className="space-y-3">
+          {dinners.filter(d => !d.isBye).map(d => (
+            <div key={d.id} className="card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div className="font-heading uppercase tracking-wide text-white text-sm">
+                  {dateStr(d.dinnerDate)} · vs {d.opponent || '—'}
+                </div>
+                <StatusPill status={d.status} />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Who's hosting</label>
+                  <input className="input" value={d.hostNames || ''} placeholder="Family / group name"
+                    onChange={e => update(d.id, 'hostNames', e.target.value)} />
+                </div>
+                <div>
+                  <label className="label">Address</label>
+                  <input className="input" value={d.address || ''} placeholder="Street address"
+                    onChange={e => update(d.id, 'address', e.target.value)} />
+                </div>
+              </div>
+              {(d.hostEmail || d.hostPhone) && (
+                <p className="mt-2 text-xs text-zinc-500">
+                  Signed up by {d.hostEmail || ''}{d.hostEmail && d.hostPhone ? ' · ' : ''}{d.hostPhone || ''}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Button size="sm" onClick={() => save(d)} disabled={busyId === d.id}>
+                  {busyId === d.id ? 'Saving…' : 'Save'}
+                </Button>
+                {d.status === 'booked' && (
+                  <Button size="sm" variant="outline" onClick={() => save(d, { reopen: true })} disabled={busyId === d.id}>
+                    Reopen
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -88,13 +88,13 @@ export async function onRequestPost({ request, env }) {
         lastName: participant.last_name,
         isParticipant: true,
       }),
-      { expirationTtl: 60 * 5 }
+      { expirationTtl: 60 * 15 }
     )
 
     const res = json({ ok: true, firstName: participant.first_name, lastName: participant.last_name })
     const headers = new Headers(res.headers)
     headers.set('Set-Cookie',
-      `participant_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60*5}`)
+      `participant_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${60*15}`)
     return new Response(res.body, { status: 200, headers })
 
   } catch (e) {
