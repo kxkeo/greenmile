@@ -41,14 +41,16 @@
            shadow-[0_6px_20px_-6px_rgba(24,83,42,0.7),0_2px_6px_-2px_rgba(0,0,0,0.5)]
            hover:shadow-[0_10px_32px_-6px_rgba(24,83,42,0.85)];
   }
+  /* Secondary button — solid, not thin outlined text. Reads as a real button. */
   .btn-outline {
-    @apply btn border-2 border-white/30 text-white hover:border-field-400 hover:text-field-300 bg-white/0 hover:bg-white/5;
+    @apply btn border-2 border-field-500 text-white bg-field-500/15 hover:bg-field-500/35 hover:border-field-400
+           shadow-[0_4px_14px_-6px_rgba(0,0,0,0.5)];
   }
   .btn-ghost {
-    @apply btn text-zinc-300 hover:text-white;
+    @apply btn text-zinc-200 hover:text-white;
   }
-  .btn-lg { @apply text-base px-11 py-[1.15rem]; }
-  .btn-md { @apply text-sm px-8 py-3.5; }
+  .btn-lg { @apply text-base px-10 py-4; }
+  .btn-md { @apply text-[0.9rem] px-8 py-4; }
   .btn-sm { @apply text-xs px-6 py-3; }
 
   /* Surface card — elevated above the charcoal page with a soft shadow */

@@ -1,6 +1,21 @@
-import { useEffect, useState } from 'react'
-import { Hero, SectionHeading, Button, Eyebrow, EmptyState, Loading } from '../components/ui'
+import { Hero, SectionHeading, Button, Eyebrow } from '../components/ui'
 import { IMG } from '../content/images'
+
+// 2026 Dinuba Emperors football schedule (from @dinuba_football).
+// home: true = home game (green), false = away (white), null = bye week.
+const SCHEDULE = [
+  { opponent: 'Redwood',          date: 'Aug 21', home: true },
+  { opponent: 'Reedley',          date: 'Aug 28', home: true },
+  { opponent: 'Sunnyside',        date: 'Sep 4',  home: true },
+  { opponent: 'Golden West',      date: 'Sep 11', home: true },
+  { opponent: 'Porterville',      date: 'Sep 18', home: true },
+  { opponent: 'Bye Week',         date: 'Sep 25', home: null },
+  { opponent: 'Exeter',           date: 'Oct 2',  home: true },
+  { opponent: 'Immanuel',         date: 'Oct 9',  home: true },
+  { opponent: 'Kerman',           date: 'Oct 16', home: true },
+  { opponent: 'Washington Union', date: 'Oct 23', home: false },
+  { opponent: 'Kingsburg',        date: 'Oct 30', home: true },
+]
 
 const COACHES = [
   { name: 'Head Coach', role: 'Head Coach', initials: 'HC' },
@@ -16,16 +31,6 @@ const HIGHLIGHTS = [
 ]
 
 export default function Team() {
-  const [schedule, setSchedule] = useState(undefined)
-
-  useEffect(() => {
-    // Reuse DHRC events API as a schedule source; gracefully empty otherwise.
-    fetch('/api/events')
-      .then(r => r.ok ? r.json() : [])
-      .then(list => setSchedule(Array.isArray(list) ? list : []))
-      .catch(() => setSchedule([]))
-  }, [])
-
   return (
     <>
       <Hero
@@ -70,33 +75,32 @@ export default function Team() {
 
       {/* Schedule */}
       <section className="section py-20">
-        <SectionHeading eyebrow="Mark your calendar" title="Season & Events" />
-        <div className="mt-10 max-w-3xl mx-auto">
-          {schedule === undefined ? (
-            <Loading label="Loading schedule…" />
-          ) : schedule.length === 0 ? (
-            <EmptyState icon="📅" title="Schedule coming soon">
-              The {new Date().getFullYear()} slate drops here. In the meantime, check our events.
-            </EmptyState>
-          ) : (
-            <div className="space-y-3">
-              {schedule.map((e, i) => (
-                <div key={e.id || i} className="card p-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-                  <div>
-                    <div className="font-heading uppercase tracking-wide text-white">{e.title || e.name || 'Event'}</div>
-                    {e.location && <div className="text-sm text-zinc-500">{e.location}</div>}
-                  </div>
-                  {(e.event_date || e.date) && (
-                    <div className="font-heading uppercase tracking-wide text-sm text-field-400 whitespace-nowrap">
-                      {e.event_date || e.date}
-                    </div>
-                  )}
-                </div>
-              ))}
+        <SectionHeading eyebrow="Mark your calendar" title="2026 Football Schedule" intro="Green means a home game on the Green Mile. White means we're on the road. Kickoffs are Fridays." />
+        <div className="mt-10 max-w-3xl mx-auto space-y-3">
+          {SCHEDULE.map((g) => (
+            <div
+              key={g.date}
+              className={`card p-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 ${
+                g.home === true ? 'border-l-4 border-l-field-500' : g.home === false ? 'border-l-4 border-l-white/60' : 'opacity-70'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {g.home !== null && (
+                  <span className={`font-heading uppercase tracking-wider text-[0.65rem] px-2 py-0.5 rounded ${
+                    g.home ? 'bg-field-500 text-white' : 'bg-white text-charcoal-900'
+                  }`}>
+                    {g.home ? 'Home' : 'Away'}
+                  </span>
+                )}
+                <span className="font-heading uppercase tracking-wide text-white">
+                  {g.home === null ? g.opponent : `vs ${g.opponent}`}
+                </span>
+              </div>
+              <div className="font-heading uppercase tracking-wide text-sm text-field-400 whitespace-nowrap">{g.date}</div>
             </div>
-          )}
-          <div className="mt-8 text-center">
-            <Button to="/events" variant="outline" size="md">See all events</Button>
+          ))}
+          <div className="pt-5 text-center">
+            <Button to="/events" variant="outline" size="md">See All Events</Button>
           </div>
         </div>
       </section>

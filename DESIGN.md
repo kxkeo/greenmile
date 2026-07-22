@@ -23,12 +23,15 @@ huge. Say "our kids", not "the players".
 - `.eyebrow` — small green all-caps kicker above headings.
 
 ## Buttons (`.btn-*` + `<Button>` from ui.jsx)
-- Substantial: bold Oswald caps, generous padding, `rounded-lg`, real shadow.
-- Sizes: `lg` (heroes/CTAs), `md` (sections), `sm` (cards only).
-- Variants: `primary` (green fill — the default action), `outline`
-  (2px border — secondary), `ghost` (text — tertiary).
+- Substantial: bold Oswald caps, generous padding (py-4), **rectangular
+  (rounded-none)**, real shadow. Every clickable CTA uses `<Button>` or a
+  `btn btn-*` class — never bare styled text or a thin bordered link.
+- Sizes: `lg` (heroes/CTAs), `md` (in-section CTAs), `sm` (nav / tight rows).
+- Variants: `primary` (solid green — the main action), `outline` (solid,
+  green-tinted fill + green border — the substantial *secondary* button, NOT
+  transparent outlined text), `ghost` (text only — use sparingly).
 - **No arrow characters (→ ←) in labels.** Plain verbs: "Buy Tickets",
-  "Join the Boosters", "Back".
+  "Donate", "Our Events", "Back".
 
 ## Cards (`.card` / `.card-hover`)
 - `charcoal-800`, `rounded-2xl`, hairline border, **`shadow-card` always**.
