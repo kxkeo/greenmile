@@ -4,11 +4,11 @@ import { IMG } from '../content/images'
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
-  { to: '/boosters', label: 'Boosters' },
   { to: '/team', label: 'Team' },
   { to: '/events', label: 'Events' },
-  { to: '/volunteer', label: 'Volunteer' },
+  { to: '/boosters', label: 'Boosters' },
   { to: '/sponsors', label: 'Sponsors' },
+  { to: '/volunteer', label: 'Volunteer' },
 ]
 
 // Footer keeps the fuller set so Donate and Shop stay reachable even though

@@ -56,7 +56,7 @@ export default function Home() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button to="/boosters" variant="outline" size="md">Meet the boosters</Button>
-              <Button to="/team" variant="ghost" size="md">See the team</Button>
+              <Button to="/team" variant="outline" size="md">See the team</Button>
             </div>
           </div>
           <div>
@@ -91,7 +91,7 @@ export default function Home() {
         subtitle="Concessions, chain crew, team meals, senior night — none of it happens without Dinuba families. This is a town that takes care of its own. Give a few hours and be part of it."
       >
         <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Volunteer Today</Button>
-        <Button to="/donate" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Make a Gift</Button>
+        <Button to="/donate" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Donate</Button>
       </CTABand>
 
       {/* Team teaser */}

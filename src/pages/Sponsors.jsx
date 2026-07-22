@@ -8,6 +8,28 @@ import { SPONSOR_TIERS } from '../content/sponsorTiers'
 
 const TIERS = SPONSOR_TIERS
 
+// Per-tier card look: Emperor = charcoal, Green = heritage green, Silver = silver.
+const CARD_STYLES = {
+  emperor: {
+    card: 'card',
+    name: 'text-zinc-300', price: 'text-white', per: 'text-zinc-400',
+    perk: 'text-zinc-200', check: 'text-field-400',
+    btnVariant: 'primary', btnClass: '',
+  },
+  green: {
+    card: 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50',
+    name: 'text-field-100', price: 'text-white', per: 'text-field-50/80',
+    perk: 'text-field-50', check: 'text-field-200',
+    btnVariant: 'outline', btnClass: '!border-white/50 !text-white hover:!bg-white/10',
+  },
+  silver: {
+    card: 'bg-gradient-to-b from-zinc-200 to-zinc-400 border border-white/40',
+    name: 'text-charcoal-700', price: 'text-charcoal-900', per: 'text-charcoal-700',
+    perk: 'text-charcoal-800', check: 'text-field-700',
+    btnVariant: 'primary', btnClass: '',
+  },
+}
+
 const CONTACTS = [
   { name: 'Coach Lester', role: 'Head of Program', icon: '📞',
     label: '(559) 737-0804', href: 'tel:5597370804' },
@@ -35,37 +57,32 @@ export default function Sponsors() {
           title="Pick Your Level"
           intro="Local businesses are the backbone of this community, and the community fills those stands. Every package puts your name in front of the Green Mile crowd — and every dollar goes straight to our kids."
         />
-        <div className="mt-12 grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto items-start">
-          {TIERS.map(t => (
-            <div key={t.slug}
-              className={`relative rounded-2xl p-7 flex flex-col shadow-card ${t.featured
-                ? 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50 shadow-glow'
-                : 'card'}`}>
-              {t.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-field-400 text-charcoal-900 font-heading uppercase tracking-wider text-[0.65rem] px-3 py-1 rounded-full whitespace-nowrap">
-                  Top billing
+        <div className="mt-12 grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto items-stretch">
+          {TIERS.map(t => {
+            const s = CARD_STYLES[t.slug] || CARD_STYLES.emperor
+            return (
+              <div key={t.slug} className={`relative rounded-2xl p-7 flex flex-col shadow-card ${s.card}`}>
+                <div className={`font-heading uppercase tracking-wider text-sm ${s.name}`}>{t.name}</div>
+                <div className={`display text-5xl mt-2 ${s.price}`}>{t.price}</div>
+                <div className={`text-xs mb-5 ${s.per}`}>per season</div>
+                <ul className="space-y-2.5 text-sm flex-1">
+                  {t.perks.map(p => (
+                    <li key={p} className={`flex gap-2 ${s.perk}`}>
+                      <span className={`shrink-0 ${s.check}`}>✓</span><span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-7">
+                  <Button
+                    to={`/sponsors/${t.slug}`}
+                    variant={s.btnVariant} size="md"
+                    className={`w-full ${s.btnClass}`}>
+                    Become {t.slug === 'emperor' ? 'an' : 'a'} {t.name.split(' ')[0]} Sponsor
+                  </Button>
                 </div>
-              )}
-              <div className="font-heading uppercase tracking-wider text-sm text-zinc-300">{t.name}</div>
-              <div className="display text-5xl text-white mt-2">{t.price}</div>
-              <div className="text-xs text-zinc-400 mb-5">per season</div>
-              <ul className="space-y-2.5 text-sm flex-1">
-                {t.perks.map(p => (
-                  <li key={p} className={`flex gap-2 ${t.featured ? 'text-field-50' : 'text-zinc-200'}`}>
-                    <span className="text-field-400 shrink-0">✓</span><span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-7">
-                <Button
-                  to={`/sponsors/${t.slug}`}
-                  variant={t.featured ? 'outline' : 'primary'} size="md"
-                  className={`w-full ${t.featured ? '!border-white/40 !text-white hover:!bg-white/10' : ''}`}>
-                  Become {t.slug === 'emperor' ? 'an' : 'a'} {t.name.split(' ')[0]} Sponsor
-                </Button>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
         <p className="mt-8 text-center text-sm text-zinc-500">
           The Green Mile Boosters is a registered nonprofit — sponsorships are tax-deductible where applicable. EIN 92-2360865.

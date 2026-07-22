@@ -99,7 +99,7 @@ export default function Donate() {
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button to="/volunteer" variant="outline" size="md">Volunteer</Button>
             <Button to="/sponsors" variant="outline" size="md">Become a Sponsor</Button>
-            <Button to="/shop" variant="ghost" size="md">Visit the Shop</Button>
+            <Button to="/shop" variant="outline" size="md">Visit the Shop</Button>
           </div>
         </div>
       </section>

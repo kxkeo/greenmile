@@ -12,8 +12,6 @@ const BOARD = [
   { name: 'Vice President', role: 'Vice President', initials: 'VP' },
   { name: 'Treasurer', role: 'Treasurer', initials: 'TR' },
   { name: 'Secretary', role: 'Secretary', initials: 'SC' },
-  { name: 'Concessions Lead', role: 'Concessions', initials: 'CL' },
-  { name: 'Fundraising Lead', role: 'Fundraising', initials: 'FL' },
 ]
 
 const STATS = [
@@ -55,8 +53,8 @@ export default function Boosters() {
             </p>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Button to="/donate" size="md">Make a Gift</Button>
-            <Button to="/events" variant="ghost" size="md">Our events</Button>
+            <Button to="/donate" size="md">Donate</Button>
+            <Button to="/events" variant="outline" size="md">Our Events</Button>
           </div>
         </div>
         <StatStrip stats={STATS} />
@@ -73,7 +71,7 @@ export default function Boosters() {
 
       <section className="section py-20">
         <SectionHeading eyebrow="Volunteer leadership" title="The Board" intro="The crew keeping the Green Mile running. Want to get involved at any level? We'd love to meet you." />
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {BOARD.map(m => (
             <div key={m.role} className="card p-6 flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-field-500 to-field-800 grid place-items-center font-display text-xl text-charcoal-900 shrink-0">

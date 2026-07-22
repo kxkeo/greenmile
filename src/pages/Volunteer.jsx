@@ -17,12 +17,6 @@ const ROLES = [
   { icon: '💵', title: 'Fundraising', body: 'Sponsorships, raffles, and campaigns. Got connections or ideas? We want them.' },
 ]
 
-const TIERS = [
-  { name: 'Fan', price: '$25', perks: ['Booster membership card', 'Season newsletter', 'That warm Emperor glow'] },
-  { name: 'Family', price: '$100', featured: true, perks: ['Everything in Fan', 'Family window decal', 'Name on the booster banner', 'Priority volunteer picks'] },
-  { name: 'Champion', price: '$250+', perks: ['Everything in Family', 'Game-day shout-out', 'Booster apparel item', 'Sponsor recognition'] },
-]
-
 export default function Volunteer() {
   return (
     <>
@@ -34,7 +28,7 @@ export default function Volunteer() {
         minH="min-h-[68vh]"
       >
         <Button to="/my-account/signup" size="lg">Sign Up to Volunteer</Button>
-        <Button href="#tiers" variant="outline" size="lg">Membership</Button>
+        <Button to="/sponsors" variant="outline" size="lg">Sponsor the Team</Button>
       </Hero>
 
       {/* Why volunteer */}
@@ -65,44 +59,10 @@ export default function Volunteer() {
         </div>
       </section>
 
-      {/* Membership tiers */}
-      <section id="tiers" className="bg-charcoal-850 border-y border-white/[0.06] scroll-mt-20">
-        <div className="section py-20">
-          <SectionHeading eyebrow="Join the boosters" title="Membership Tiers" intro="Not able to volunteer in person? Membership keeps the program strong all season long." />
-          <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-            {TIERS.map(t => (
-              <div key={t.name} className={`relative rounded-2xl p-7 ${t.featured ? 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50 shadow-glow' : 'card'}`}>
-                {t.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-field-400 text-charcoal-900 font-heading uppercase tracking-wider text-[0.65rem] px-3 py-1 rounded-full">
-                    Most popular
-                  </div>
-                )}
-                <div className="font-heading uppercase tracking-wider text-sm text-zinc-300">{t.name}</div>
-                <div className="display text-5xl text-white mt-2">{t.price}</div>
-                <div className="text-xs text-zinc-400 mb-5">per season</div>
-                <ul className="space-y-2.5 text-sm">
-                  {t.perks.map(p => (
-                    <li key={p} className="flex gap-2 text-zinc-200">
-                      <span className="text-field-400">✓</span><span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-7">
-                  <Button to="/donate" variant={t.featured ? 'outline' : 'primary'} size="md"
-                    className={`w-full ${t.featured ? '!border-white/40 !text-white hover:!bg-white/10' : ''}`}>
-                    Choose {t.name}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <CTABand
         eyebrow="One sign-up away"
         title="Let's Build Something Great"
-        subtitle="Create your free account to sign up for volunteer shifts, manage your membership, and stay in the loop all season."
+        subtitle="Joining the boosters is free. Create your free account to sign up for volunteer shifts and stay in the loop all season."
       >
         <Button to="/my-account/signup" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Create My Account</Button>
         <Button href="mailto:info@greenmileboosters.org" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Email the Boosters</Button>

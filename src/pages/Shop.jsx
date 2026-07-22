@@ -21,7 +21,7 @@ export default function Shop() {
         subtitle="Rep the green and white all over town. Every purchase puts money straight back into our kids' program."
         minH="min-h-[54vh]"
       >
-        <Button to="/donate" variant="outline" size="lg">Or Make a Gift</Button>
+        <Button to="/donate" variant="outline" size="lg">Donate</Button>
       </Hero>
 
       <section className="section py-20">
