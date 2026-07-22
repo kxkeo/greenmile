@@ -9,9 +9,10 @@ function json(d, s = 200) {
 export async function onRequestGet({ env }) {
   try {
     const raw = await env.SESSIONS.get('config:season_calendar')
-    if (raw) {
+    // A stored value wins even when empty — the admin chose to show nothing.
+    if (raw != null) {
       const arr = JSON.parse(raw)
-      if (Array.isArray(arr) && arr.length) return json(arr)
+      if (Array.isArray(arr)) return json(arr)
     }
   } catch { /* fall through to default */ }
   return json(DEFAULT_CALENDAR)

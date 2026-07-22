@@ -3,21 +3,13 @@ import { Link } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, Loading } from '../components/ui'
 import { IMG } from '../content/images'
 
-// Seasonal "Season at a Glance" cards. These come from /api/season-calendar
-// (editable in the admin Events section); this local copy is the fallback if
-// the request fails so the page never looks empty.
-const FALLBACK = [
-  { icon: '🏈', title: 'Meet the Emperors', when: 'August', body: 'Kick off the season — meet the players and coaches, grab gear, and join the boosters.' },
-  { icon: '🌭', title: 'Home Opener Tailgate', when: 'September', body: 'Food, music, and Emperor spirit before the first home game on the Green Mile.' },
-  { icon: '⛳', title: 'Booster Golf Scramble', when: 'October', body: 'Our biggest fundraiser of the year. Sponsor a hole, build a team, swing for the program.' },
-  { icon: '🎓', title: 'Senior Night', when: 'November', body: 'Honoring our seniors and their families under the lights.' },
-  { icon: '🏆', title: 'Football Banquet', when: 'December', body: 'Celebrate the season, the awards, and the Emperors who made it special.' },
-  { icon: '🏕️', title: 'Youth Football Camp', when: 'Summer', body: 'The next generation of Emperors learns from the program. Future stars start here.' },
-]
+// "Season at a Glance" cards come from /api/season-calendar (admin-managed in
+// the admin Events section). There's no fake fallback — if it's empty, the
+// section is simply hidden.
 
 export default function Events() {
   const [events, setEvents] = useState(undefined)
-  const [calendar, setCalendar] = useState(FALLBACK)
+  const [calendar, setCalendar] = useState([])
 
   useEffect(() => {
     fetch('/api/campaigns')
@@ -30,7 +22,7 @@ export default function Events() {
 
     fetch('/api/season-calendar')
       .then(r => r.ok ? r.json() : null)
-      .then(list => { if (Array.isArray(list) && list.length) setCalendar(list) })
+      .then(list => { if (Array.isArray(list)) setCalendar(list) })
       .catch(() => {})
   }, [])
 
@@ -49,53 +41,63 @@ export default function Events() {
       <section className="section py-20">
         {events === undefined ? (
           <Loading label="Loading events…" />
-        ) : events.length > 0 ? (
-          <>
-            <SectionHeading eyebrow="Happening now" title="Register & Attend" />
-            <div className={`mt-12 grid gap-5 ${
-              events.length === 1 ? 'max-w-md mx-auto'
-              : events.length === 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto'
-              : 'sm:grid-cols-2 lg:grid-cols-3'
-            }`}>
-              {events.map((e, i) => {
-                const infoTo = String(e.meta?.slug || '').startsWith('country-nights')
-                  ? '/events/country-nights' : `/events/${e.id}`
-                return (
-                  <Link key={e.id || i} to={infoTo} className="card-hover overflow-hidden block group">
-                    <div className="bg-cover bg-center h-40 transition-transform duration-300 group-hover:scale-[1.03]"
-                         style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.nightRun})` }} />
-                    <div className="p-6">
-                      {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
-                      <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
-                      {e.description && <p className="mt-2 text-sm text-zinc-400 leading-relaxed line-clamp-3">{e.description}</p>}
-                      <div className="mt-5">
-                        <span className="btn btn-primary btn-sm">{e.price_cents ? 'Get Tickets' : 'Register'}</span>
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-            <div className="mt-16">
-              <SectionHeading eyebrow="On the calendar" title="Season at a Glance" />
-            </div>
-          </>
         ) : (
-          <SectionHeading eyebrow="On the calendar" title="Season at a Glance" intro="Our annual booster calendar. Specific dates and registration open up as each event approaches." />
-        )}
+          <>
+            {events.length > 0 && (
+              <>
+                <SectionHeading eyebrow="Happening now" title="Register & Attend" />
+                <div className={`mt-12 grid gap-5 ${
+                  events.length === 1 ? 'max-w-md mx-auto'
+                  : events.length === 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto'
+                  : 'sm:grid-cols-2 lg:grid-cols-3'
+                }`}>
+                  {events.map((e, i) => {
+                    const infoTo = String(e.meta?.slug || '').startsWith('country-nights')
+                      ? '/events/country-nights' : `/events/${e.id}`
+                    return (
+                      <Link key={e.id || i} to={infoTo} className="card-hover overflow-hidden block group">
+                        <div className="bg-cover bg-center h-40 transition-transform duration-300 group-hover:scale-[1.03]"
+                             style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.nightRun})` }} />
+                        <div className="p-6">
+                          {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
+                          <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
+                          {e.description && <p className="mt-2 text-sm text-zinc-400 leading-relaxed line-clamp-3">{e.description}</p>}
+                          <div className="mt-5">
+                            <span className="btn btn-primary btn-sm">{e.price_cents ? 'Get Tickets' : 'Register'}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </>
+            )}
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {calendar.map(e => (
-            <div key={e.title} className="card-hover p-7">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-3xl">{e.icon}</span>
-                <span className="font-heading uppercase tracking-wider text-xs text-field-400">{e.when}</span>
+            {/* Season at a Glance — only shown when the admin has added cards. */}
+            {calendar.length > 0 && (
+              <div className={events.length > 0 ? 'mt-16' : ''}>
+                <SectionHeading eyebrow="On the calendar" title="Season at a Glance" />
+                <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {calendar.map((e, i) => (
+                    <div key={e.title || i} className="card-hover p-7">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-3xl">{e.icon}</span>
+                        <span className="font-heading uppercase tracking-wider text-xs text-field-400">{e.when}</span>
+                      </div>
+                      <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
+                      <p className="mt-2 text-sm text-zinc-400 leading-relaxed">{e.body}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
-              <p className="mt-2 text-sm text-zinc-400 leading-relaxed">{e.body}</p>
-            </div>
-          ))}
-        </div>
+            )}
+
+            {events.length === 0 && calendar.length === 0 && (
+              <SectionHeading eyebrow="Booster calendar" title="More Coming Soon"
+                intro="We're lining up the season. Check back soon for upcoming Emperor events and registration." />
+            )}
+          </>
+        )}
       </section>
 
       <section className="bg-charcoal-850 border-y border-white/[0.06]">

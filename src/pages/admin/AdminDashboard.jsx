@@ -38,9 +38,11 @@ export default function AdminDashboard() {
       .catch(() => navigate('/admin/login'))
   }, [navigate])
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
-    navigate('/admin/login')
+  const logout = () => {
+    // Redirect immediately — don't block on the network round-trip. The session
+    // is cleared server-side by the fire-and-forget request.
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    navigate('/')
   }
 
   if (me === undefined) return <Loading label="Loading admin…" />

@@ -11,9 +11,11 @@ function json(d, s = 200) {
 export async function onRequestGet({ env }) {
   try {
     const raw = await env.SESSIONS.get('config:season_calendar')
-    if (raw) {
+    // A stored value — even an empty array — is the admin's choice and wins.
+    // Only a missing key falls back to the default.
+    if (raw != null) {
       const arr = JSON.parse(raw)
-      if (Array.isArray(arr) && arr.length) return json({ items: arr, isDefault: false })
+      if (Array.isArray(arr)) return json({ items: arr, isDefault: false })
     }
   } catch { /* fall through */ }
   return json({ items: DEFAULT_CALENDAR, isDefault: true })
@@ -23,15 +25,16 @@ export async function onRequestPost({ request, env }) {
   let body
   try { body = await request.json() } catch { return json({ error: 'Invalid JSON' }, 400) }
 
-  // Empty array or explicit reset restores the built-in default.
-  if (body?.reset || (Array.isArray(body?.items) && body.items.length === 0)) {
+  // Only an explicit reset restores the built-in default. Saving an empty list
+  // is a real choice — it persists as empty so the public section stays hidden
+  // and the (fake) default never comes back.
+  if (body?.reset) {
     await env.SESSIONS.delete('config:season_calendar')
     return json({ ok: true, items: DEFAULT_CALENDAR, isDefault: true })
   }
 
   const clean = sanitizeCalendar(body?.items)
   if (!clean) return json({ error: 'items array required' }, 400)
-  if (clean.length === 0) return json({ error: 'Add at least one card with a title.' }, 400)
 
   await env.SESSIONS.put('config:season_calendar', JSON.stringify(clean))
   return json({ ok: true, items: clean, isDefault: false })

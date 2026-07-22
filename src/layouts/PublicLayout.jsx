@@ -54,11 +54,12 @@ function Header() {
       .catch(() => setParticipant(null))
   }, [location.pathname])
 
-  const logout = async () => {
-    // Clear UI immediately so the button feels instant, then drop the session.
+  const logout = () => {
+    // Clear UI and redirect immediately; the session is dropped server-side by
+    // the fire-and-forget request (no network wait before navigating home).
     setParticipant(null)
     setOpen(false)
-    await fetch('/api/auth/participant-logout', { method: 'POST', credentials: 'include' }).catch(() => {})
+    fetch('/api/auth/participant-logout', { method: 'POST', credentials: 'include' }).catch(() => {})
     navigate('/')
   }
 
