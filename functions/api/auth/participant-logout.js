@@ -12,7 +12,7 @@ export async function onRequestPost({ request, env }) {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store, no-cache, must-revalidate, private',
       'Clear-Site-Data': '"cache", "cookies"',
-      'Set-Cookie': 'participant_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+      'Set-Cookie': 'participant_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
     },
   })
 }

@@ -3,6 +3,10 @@
 // Phone → 6-digit PIN auth
 
 import { verifyCredential } from '../../_lib/password.js'
+import { tooManyAttempts, recordFailure, clearAttempts, clientIp } from '../../_lib/rateLimit.js'
+
+const RL_MAX = 12
+const RL_WINDOW = 300 // 12 failed attempts / 5 min per IP
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -19,6 +23,16 @@ export async function onRequestPost({ request, env }) {
   const { identifier, credential } = body
   if (!identifier?.trim())  return json({ error: 'Email or phone required' }, 400)
   if (!credential?.trim())  return json({ error: 'Password or PIN required' }, 400)
+
+  // Rate-limit by IP to blunt PIN/password brute-force.
+  const rlId = `plogin:${clientIp(request)}`
+  if (await tooManyAttempts(env, rlId, RL_MAX, RL_WINDOW)) {
+    return json({ error: 'Too many attempts. Please wait a few minutes and try again.' }, 429)
+  }
+  const fail = async (msg, status = 401) => {
+    await recordFailure(env, rlId, RL_WINDOW)
+    return json({ error: msg }, status)
+  }
 
   const id = identifier.trim()
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)
@@ -50,7 +64,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (!participant) {
-      return json({ error: 'No account found with that email or phone' }, 401)
+      return await fail('No account found with that email or phone')
     }
 
     if (participant.disabled) {
@@ -65,8 +79,9 @@ export async function onRequestPost({ request, env }) {
 
     const result = await verifyCredential(credToCheck, participant.pin_hash)
     if (!result.ok) {
-      return json({ error: isPhone ? 'Incorrect PIN' : 'Incorrect password' }, 401)
+      return await fail(isPhone ? 'Incorrect PIN' : 'Incorrect password')
     }
+    await clearAttempts(env, rlId, RL_WINDOW)
     // Silent upgrade: if the stored hash was legacy SHA-256, rewrite it as
     // a fresh PBKDF2 hash on this successful login.
     if (result.upgradedHash) {

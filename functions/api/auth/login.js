@@ -2,6 +2,10 @@
 // context: 'admin' (15 min sliding) | 'gameday' (4 hour sliding)
 
 import { verifyCredential, hashCredential } from '../../_lib/password.js'
+import { tooManyAttempts, recordFailure, clearAttempts, clientIp } from '../../_lib/rateLimit.js'
+
+const RL_MAX = 12
+const RL_WINDOW = 300 // 12 failed attempts / 5 min per IP
 
 const TTL = {
   admin:   60 * 15,        // 15 minutes
@@ -22,20 +26,34 @@ export async function onRequestPost(context) {
 
   const ttl = TTL[loginContext] || TTL.admin
 
-  // Built-in admin account. Password precedence: KV override (set via
-  // Settings → Security) > ADMIN_PASSWORD env var > built-in default.
+  // Rate-limit by IP to blunt brute-force. A failed attempt increments the
+  // counter; a successful login clears it.
+  const rlId = `login:${clientIp(request)}`
+  if (await tooManyAttempts(env, rlId, RL_MAX, RL_WINDOW)) {
+    return json({ error: 'Too many attempts. Please wait a few minutes and try again.' }, 429)
+  }
+  const fail = async (msg = 'Invalid credentials', status = 401) => {
+    await recordFailure(env, rlId, RL_WINDOW)
+    return json({ error: msg }, status)
+  }
+
+  // Built-in admin account. Password comes from the KV override (Settings →
+  // Security) or the ADMIN_PASSWORD env var — there is NO hardcoded default, so
+  // if neither is set the admin login fails closed.
   if (email === 'admin') {
-    const storedPw = await env.SESSIONS.get('admin_password') || env.ADMIN_PASSWORD || 'Emperor$Rock27'
+    const storedPw = (await env.SESSIONS.get('admin_password')) || env.ADMIN_PASSWORD || null
     const disabled = await env.SESSIONS.get('admin_disabled')
     if (disabled === '1') return json({ error: 'Account is disabled' }, 401)
-    if (password !== storedPw) return json({ error: 'Invalid credentials' }, 401)
+    if (!storedPw) return json({ error: 'Admin login is not configured.' }, 503)
+    if (password !== storedPw) return await fail()
+    await clearAttempts(env, rlId, RL_WINDOW)
     return createSession(env, { id: 0, email: 'admin', firstName: 'Admin', isAdmin: true, role: 'admin', loginContext }, ttl)
   }
 
   // DB users
   try {
     const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
-    if (!user) return json({ error: 'Invalid credentials' }, 401)
+    if (!user) return await fail()
     if (user.is_disabled === 1) return json({ error: 'Account is disabled' }, 401)
 
     // Verify against stored hash (PBKDF2 or legacy SHA-256 hex). Historically
@@ -53,7 +71,8 @@ export async function onRequestPost(context) {
       verified = true
       upgradedHash = await hashCredential(password)
     }
-    if (!verified) return json({ error: 'Invalid credentials' }, 401)
+    if (!verified) return await fail()
+    await clearAttempts(env, rlId, RL_WINDOW)
     if (upgradedHash) {
       try {
         await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(upgradedHash, user.id).run()

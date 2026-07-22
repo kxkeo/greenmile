@@ -9,7 +9,7 @@ export async function onRequestPost(context) {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Set-Cookie': 'greenmile_session=; Path=/; HttpOnly; Max-Age=0',
+      'Set-Cookie': 'greenmile_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
     },
   })
 }

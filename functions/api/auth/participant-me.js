@@ -57,7 +57,7 @@ export async function onRequestGet({ request, env }) {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store, no-cache, must-revalidate, private',
         'Pragma': 'no-cache',
-        'Set-Cookie': `participant_session=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${TTL}`,
+        'Set-Cookie': `participant_session=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL}`,
       },
     })
   } catch (e) {

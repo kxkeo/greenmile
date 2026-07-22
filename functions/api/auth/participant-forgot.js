@@ -6,6 +6,7 @@
 
 import { sendEmail } from '../email/send.js'
 import { passwordResetEmail } from '../email/templates.js'
+import { tooManyAttempts, recordFailure, clientIp } from '../../_lib/rateLimit.js'
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -23,6 +24,14 @@ export async function onRequestPost({ request, env }) {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ error: 'Enter a valid email address' }, 400)
   }
+
+  // Throttle by IP so this can't be used to email-bomb an address or probe for
+  // accounts. Every request counts; response stays generic either way.
+  const rlId = `forgot:${clientIp(request)}`
+  if (await tooManyAttempts(env, rlId, 6, 900)) {
+    return json(GENERIC_OK)
+  }
+  await recordFailure(env, rlId, 900)
 
   try {
     const participant = await env.DB.prepare(
