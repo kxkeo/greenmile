@@ -31,6 +31,11 @@ export async function onRequestPost({ request, env }) {
   if (!food && !drinks && !desserts) {
     return json({ error: 'Pick at least one: food, drinks, or dessert.' }, 400)
   }
+  const clip = v => (v || '').toString().trim().slice(0, 200) || null
+  // Notes only count for items that were actually selected.
+  const foodNote     = food     ? clip(body.foodNote)     : null
+  const drinksNote   = drinks   ? clip(body.drinksNote)   : null
+  const dessertsNote = desserts ? clip(body.dessertsNote) : null
 
   try {
     const dinner = await env.DB.prepare(
@@ -48,13 +53,16 @@ export async function onRequestPost({ request, env }) {
     // Upsert on (dinner_id, participant_id) so a parent updating their pledge
     // replaces it instead of stacking duplicates.
     await env.DB.prepare(
-      `INSERT INTO team_dinner_donations (dinner_id, participant_id, donor_name, food, drinks, desserts)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO team_dinner_donations
+         (dinner_id, participant_id, donor_name, food, drinks, desserts, food_note, drinks_note, desserts_note)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(dinner_id, participant_id)
        DO UPDATE SET donor_name = excluded.donor_name, food = excluded.food,
                      drinks = excluded.drinks, desserts = excluded.desserts,
+                     food_note = excluded.food_note, drinks_note = excluded.drinks_note,
+                     desserts_note = excluded.desserts_note,
                      created_at = CURRENT_TIMESTAMP`
-    ).bind(dinnerId, participantId, donorName, food, drinks, desserts).run()
+    ).bind(dinnerId, participantId, donorName, food, drinks, desserts, foodNote, drinksNote, dessertsNote).run()
 
     return json({ ok: true })
   } catch (e) {

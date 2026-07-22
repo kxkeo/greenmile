@@ -17,15 +17,21 @@ export async function onRequestGet({ env }) {
        ORDER BY dinner_date ASC`
     ).all()
 
-    // Potluck donations, grouped by dinner.
+    // Potluck donations, grouped by dinner. Each selected item can carry a note
+    // about exactly what the parent is bringing (shown as "Food (Tri-tip)").
     const { results: donRows } = await env.DB.prepare(
-      `SELECT dinner_id, donor_name, food, drinks, desserts
+      `SELECT dinner_id, donor_name, food, drinks, desserts, food_note, drinks_note, desserts_note
        FROM team_dinner_donations
        ORDER BY created_at ASC`
     ).all()
+    const label = (on, name, note) => on ? (note ? `${name} (${note})` : name) : null
     const byDinner = {}
     for (const d of (donRows || [])) {
-      const items = [d.food && 'Food', d.drinks && 'Drinks', d.desserts && 'Dessert'].filter(Boolean)
+      const items = [
+        label(d.food, 'Food', d.food_note),
+        label(d.drinks, 'Drinks', d.drinks_note),
+        label(d.desserts, 'Dessert', d.desserts_note),
+      ].filter(Boolean)
       if (!items.length) continue
       ;(byDinner[d.dinner_id] ||= []).push({ name: d.donor_name, items })
     }

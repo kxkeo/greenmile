@@ -363,11 +363,19 @@ function BookModal({ dinner, participant, onClose, onBooked }) {
   )
 }
 
+const DONATE_ITEMS = [
+  { key: 'food',     label: '🍽️ Food',    placeholder: 'e.g. Tri-tip sandwiches' },
+  { key: 'drinks',   label: '🥤 Drinks',   placeholder: 'e.g. Water & Gatorade' },
+  { key: 'desserts', label: '🍰 Dessert',  placeholder: 'e.g. Brownies' },
+]
+
 function DonateModal({ dinner, onClose, onDonated }) {
   const [picks, setPicks] = useState({ food: false, drinks: false, desserts: false })
+  const [notes, setNotes] = useState({ food: '', drinks: '', desserts: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const toggle = k => setPicks(p => ({ ...p, [k]: !p[k] }))
+  const setNote = (k, v) => setNotes(n => ({ ...n, [k]: v }))
   const any = picks.food || picks.drinks || picks.desserts
 
   const submit = async (e) => {
@@ -379,7 +387,11 @@ function DonateModal({ dinner, onClose, onDonated }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ dinnerId: dinner.id, food: picks.food, drinks: picks.drinks, desserts: picks.desserts }),
+        body: JSON.stringify({
+          dinnerId: dinner.id,
+          food: picks.food, drinks: picks.drinks, desserts: picks.desserts,
+          foodNote: notes.food.trim(), drinksNote: notes.drinks.trim(), dessertsNote: notes.desserts.trim(),
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not save your donation.')
@@ -397,23 +409,33 @@ function DonateModal({ dinner, onClose, onDonated }) {
         <Eyebrow className="mb-2">Donate to This Dinner</Eyebrow>
         <h2 className="display text-white text-3xl">vs {dinner.opponent}</h2>
         <p className="mt-1 text-sm text-zinc-400">Dinner {longDay(dinner.dinnerDate)}</p>
-        <p className="mt-4 text-sm text-zinc-400">Pitch in for the team dinner — pick what you'll bring.</p>
+        <p className="mt-4 text-sm text-zinc-400">Pick what you'll bring, then add what you're bringing.</p>
 
-        <form onSubmit={submit} className="mt-5 space-y-5">
-          <div className="grid grid-cols-3 gap-2">
-            {[['food', '🍽️ Food'], ['drinks', '🥤 Drinks'], ['desserts', '🍰 Dessert']].map(([k, lbl]) => (
-              <button type="button" key={k} onClick={() => toggle(k)}
-                className={`rounded-lg border px-3 py-3 text-sm font-heading uppercase tracking-wide transition ${
-                  picks[k] ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-900 border-white/10 text-zinc-400 hover:border-white/25'
-                }`}>
-                {lbl}
-              </button>
-            ))}
-          </div>
+        <form onSubmit={submit} className="mt-5 space-y-3">
+          {DONATE_ITEMS.map(({ key, label, placeholder }) => {
+            const on = picks[key]
+            return (
+              <div key={key} className="flex items-center gap-2">
+                <button type="button" onClick={() => toggle(key)}
+                  className={`shrink-0 w-32 rounded-lg border px-3 py-3 text-sm font-heading uppercase tracking-wide transition text-left ${
+                    on ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-900 border-white/10 text-zinc-400 hover:border-white/25'
+                  }`}>
+                  {label}
+                </button>
+                <input
+                  className="input flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                  value={notes[key]}
+                  onChange={e => setNote(key, e.target.value)}
+                  placeholder={on ? placeholder : 'Select to add details'}
+                  disabled={!on}
+                />
+              </div>
+            )
+          })}
 
           {error && <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-2">
             <Button type="button" onClick={onClose} variant="outline" size="md" className="flex-1">Cancel</Button>
             <Button size="md" className="flex-1" disabled={busy}>{busy ? 'Saving…' : 'Confirm Donation'}</Button>
           </div>
