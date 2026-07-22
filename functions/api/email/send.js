@@ -46,23 +46,26 @@ async function sendViaSmtp(env, { to, subject, html, replyTo }) {
   const port   = parseInt(await cfg(env, 'SMTP_PORT', '465'), 10)
   const secRaw = await cfg(env, 'SMTP_SECURE')
   const secure = secRaw != null ? String(secRaw) === 'true' : port === 465
-  const authType = (await cfg(env, 'SMTP_AUTH', 'login')).toLowerCase()
+  const authRaw = (await cfg(env, 'SMTP_AUTH', '') || '').toLowerCase()
+  const authType = authRaw || ['login', 'plain']
+
+  // Port 465 = implicit TLS (secure). Port 587 = plaintext then STARTTLS.
+  const tls = secure ? { secure: true } : { startTls: true }
 
   // Dynamic import so a bundling issue can only affect the SMTP path, never
   // the whole functions bundle (the caller falls back to Resend on throw).
   const { WorkerMailer } = await import('worker-mailer')
   const mailer = await WorkerMailer.connect({
-    host, port, secure, authType,
+    host, port, ...tls, authType,
     credentials: { username: user, password: pass },
   })
   try {
     await mailer.send({
       from: { name: FROM_NAME, email: user },
-      to: { email: to },
-      replyTo: replyTo ? { email: replyTo } : undefined,
+      to: { name: '', email: to },
       subject,
-      html,
       text: htmlToText(html),
+      html,
     })
   } finally {
     try { await mailer.close?.() } catch { /* ignore */ }
@@ -91,17 +94,22 @@ async function sendViaResend(env, { to, subject, html, replyTo }) {
 
 export async function sendEmail(env, { to, subject, html, replyTo = 'info@greenmileboosters.org' }) {
   // 1. Try SMTP (MXroute) first when configured.
+  let smtpErr = null
   try {
     const smtp = await sendViaSmtp(env, { to, subject, html, replyTo })
-    if (smtp) return smtp
+    if (smtp) return smtp // SMTP not configured returns null → fall through to Resend
   } catch (e) {
-    console.error('SMTP send failed, falling back to Resend:', e?.message)
+    smtpErr = e?.message || String(e)
+    console.error('SMTP send failed:', smtpErr)
   }
-  // 2. Fall back to Resend.
+
+  // 2. Fall back to Resend. If SMTP was actually attempted and failed, surface
+  //    that real error rather than Resend's generic "not configured".
   try {
-    return await sendViaResend(env, { to, subject, html, replyTo })
+    const r = await sendViaResend(env, { to, subject, html, replyTo })
+    if (r.ok) return r
+    return { ok: false, error: smtpErr ? `SMTP error: ${smtpErr}` : r.error }
   } catch (e) {
-    console.error('Resend send failed:', e?.message)
-    return { ok: false, error: e?.message || 'Send failed' }
+    return { ok: false, error: smtpErr ? `SMTP error: ${smtpErr}` : (e?.message || 'Send failed') }
   }
 }
