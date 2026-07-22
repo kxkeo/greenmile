@@ -27,7 +27,8 @@ export default function Parents() {
   const [dinners, setDinners] = useState(undefined)
   const [participant, setParticipant] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
-  const [booking, setBooking] = useState(null)   // dinner being booked
+  const [booking, setBooking] = useState(null)   // dinner being booked (hosted)
+  const [donating, setDonating] = useState(null) // dinner being donated to
   const [toast, setToast] = useState('')
 
   const load = () => {
@@ -64,6 +65,13 @@ export default function Parents() {
   const onBooked = (dinner) => {
     setBooking(null)
     setToast(`You're hosting the ${dinner.opponent} week dinner — thank you! A confirmation is on its way.`)
+    load()
+    setTimeout(() => setToast(''), 8000)
+  }
+
+  const onDonated = (dinner) => {
+    setDonating(null)
+    setToast(`Thank you for pitching in on the ${dinner.opponent} week dinner!`)
     load()
     setTimeout(() => setToast(''), 8000)
   }
@@ -152,7 +160,7 @@ export default function Parents() {
 
                   <div className="mt-10 max-w-3xl mx-auto space-y-3">
                     {dinners.map(d => (
-                      <DinnerRow key={d.id} dinner={d} onHost={() => onHostClick(d)} />
+                      <DinnerRow key={d.id} dinner={d} onHost={() => onHostClick(d)} onDonate={() => setDonating(d)} />
                     ))}
                   </div>
 
@@ -174,6 +182,14 @@ export default function Parents() {
           participant={participant}
           onClose={() => setBooking(null)}
           onBooked={() => onBooked(booking)}
+        />
+      )}
+
+      {donating && (
+        <DonateModal
+          dinner={donating}
+          onClose={() => setDonating(null)}
+          onDonated={() => onDonated(donating)}
         />
       )}
     </>
@@ -203,7 +219,7 @@ function MembersGate() {
   )
 }
 
-function DinnerRow({ dinner, onHost }) {
+function DinnerRow({ dinner, onHost, onDonate }) {
   if (dinner.isBye) {
     return (
       <div className="rounded-xl border border-white/[0.06] bg-charcoal-900/50 px-5 py-4 flex items-center justify-center">
@@ -215,8 +231,9 @@ function DinnerRow({ dinner, onHost }) {
   }
 
   const booked = dinner.status === 'booked'
+  const donations = Array.isArray(dinner.donations) ? dinner.donations : []
   return (
-    <div className="card p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div className="card p-5 flex flex-col sm:flex-row sm:items-start gap-4">
       {/* Date block */}
       <div className="shrink-0 text-center sm:w-24">
         <div className="font-display text-field-400 text-3xl leading-none">
@@ -244,17 +261,33 @@ function DinnerRow({ dinner, onHost }) {
         ) : (
           <div className="mt-1.5 text-sm text-zinc-400">Open — this dinner needs a host.</div>
         )}
+
+        {/* Potluck donations */}
+        {donations.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-white/[0.06]">
+            <div className="font-heading uppercase tracking-wider text-[0.65rem] text-zinc-500 mb-1.5">Parents bringing</div>
+            <ul className="space-y-1">
+              {donations.map((d, i) => (
+                <li key={i} className="text-sm text-zinc-300 flex flex-wrap gap-x-2">
+                  <span className="text-zinc-200">{d.name}</span>
+                  <span className="text-field-300">{d.items.join(', ')}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Action */}
-      <div className="shrink-0">
+      <div className="shrink-0 flex sm:flex-col gap-2 sm:items-end">
         {booked ? (
-          <span className="inline-block font-heading uppercase tracking-wide text-xs text-field-400 border border-field-500/40 rounded-full px-4 py-2">
+          <span className="inline-flex items-center justify-center font-heading uppercase tracking-wide text-xs text-field-400 border border-field-500/40 rounded-full px-4 py-2">
             ✓ Booked
           </span>
         ) : (
           <Button onClick={onHost} variant="primary" size="sm">Host This Dinner</Button>
         )}
+        <Button onClick={onDonate} variant="outline" size="sm">Donate</Button>
       </div>
     </div>
   )
@@ -323,6 +356,66 @@ function BookModal({ dinner, participant, onClose, onBooked }) {
           <div className="flex gap-3">
             <Button type="button" onClick={onClose} variant="outline" size="md" className="flex-1">Cancel</Button>
             <Button size="md" className="flex-1" disabled={busy}>{busy ? 'Booking…' : 'Confirm Hosting'}</Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function DonateModal({ dinner, onClose, onDonated }) {
+  const [picks, setPicks] = useState({ food: false, drinks: false, desserts: false })
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const toggle = k => setPicks(p => ({ ...p, [k]: !p[k] }))
+  const any = picks.food || picks.drinks || picks.desserts
+
+  const submit = async (e) => {
+    e.preventDefault()
+    if (!any) { setError('Pick at least one: food, drinks, or dessert.'); return }
+    setError(''); setBusy(true)
+    try {
+      const res = await fetch('/api/team-dinners/donate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ dinnerId: dinner.id, food: picks.food, drinks: picks.drinks, desserts: picks.desserts }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not save your donation.')
+      onDonated()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md card p-7 sm:p-8" onClick={e => e.stopPropagation()}>
+        <Eyebrow className="mb-2">Donate to This Dinner</Eyebrow>
+        <h2 className="display text-white text-3xl">vs {dinner.opponent}</h2>
+        <p className="mt-1 text-sm text-zinc-400">Dinner {longDay(dinner.dinnerDate)}</p>
+        <p className="mt-4 text-sm text-zinc-400">Pitch in for the team dinner — pick what you'll bring.</p>
+
+        <form onSubmit={submit} className="mt-5 space-y-5">
+          <div className="grid grid-cols-3 gap-2">
+            {[['food', '🍽️ Food'], ['drinks', '🥤 Drinks'], ['desserts', '🍰 Dessert']].map(([k, lbl]) => (
+              <button type="button" key={k} onClick={() => toggle(k)}
+                className={`rounded-lg border px-3 py-3 text-sm font-heading uppercase tracking-wide transition ${
+                  picks[k] ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-900 border-white/10 text-zinc-400 hover:border-white/25'
+                }`}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+
+          {error && <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
+
+          <div className="flex gap-3">
+            <Button type="button" onClick={onClose} variant="outline" size="md" className="flex-1">Cancel</Button>
+            <Button size="md" className="flex-1" disabled={busy}>{busy ? 'Saving…' : 'Confirm Donation'}</Button>
           </div>
         </form>
       </div>
