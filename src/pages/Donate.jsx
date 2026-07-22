@@ -93,11 +93,12 @@ export default function Donate() {
           <SectionHeading eyebrow="Other ways to give" title="More Than Money" />
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             <FeatureCard icon="⏱️" title="Give Time">Volunteer at games and events — often worth more than a check.</FeatureCard>
-            <FeatureCard icon="🏢" title="Corporate Sponsor">Put your business on the banner and the Green Mile. Email us to sponsor.</FeatureCard>
+            <FeatureCard icon="🏢" title="Corporate Sponsor">Put your business on the banner and the Green Mile — packages from $300 a season.</FeatureCard>
             <FeatureCard icon="🛍️" title="Shop the Store">Rep the Emperors. Every purchase supports the program.</FeatureCard>
           </div>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button to="/volunteer" variant="outline" size="md">Volunteer</Button>
+            <Button to="/sponsors" variant="outline" size="md">Become a Sponsor</Button>
             <Button to="/shop" variant="ghost" size="md">Visit the Shop →</Button>
           </div>
         </div>

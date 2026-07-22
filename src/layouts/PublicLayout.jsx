@@ -8,6 +8,7 @@ const NAV = [
   { to: '/team', label: 'Team' },
   { to: '/events', label: 'Events' },
   { to: '/volunteer', label: 'Volunteer' },
+  { to: '/sponsors', label: 'Sponsors' },
   { to: '/donate', label: 'Donate' },
   { to: '/shop', label: 'Shop' },
 ]
@@ -178,6 +179,7 @@ function Footer() {
             <ul className="space-y-2.5 text-sm">
               <li><Link to="/volunteer" className="text-zinc-400 hover:text-field-400 transition">Volunteer</Link></li>
               <li><Link to="/donate" className="text-zinc-400 hover:text-field-400 transition">Donate</Link></li>
+              <li><Link to="/sponsors" className="text-zinc-400 hover:text-field-400 transition">Sponsor the team</Link></li>
               <li><Link to="/my-account/signup" className="text-zinc-400 hover:text-field-400 transition">Become a member</Link></li>
               <li><a href="mailto:info@greenmileboosters.org" className="text-zinc-400 hover:text-field-400 transition">Contact us</a></li>
             </ul>
