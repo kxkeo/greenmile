@@ -39,6 +39,9 @@ export async function onRequest(context) {
     '/api/campaigns',
     '/api/players/active-roster',
     '/api/season-calendar',
+    // Team dinners: GET schedule is public; POST /book self-checks the
+    // participant session inside the handler.
+    '/api/team-dinners',
     // Store public
     '/api/store/products',
     '/api/store/shipping-rate',

@@ -844,6 +844,55 @@ export function raffleTicketEmail({ firstName, ticketQty, totalCents, paymentSta
   }
 }
 
+// ── Team Dinner Host Confirmation ───────────────────────────────────────────
+// Sent when a parent signs up to host the Thursday team dinner before a game.
+export function teamDinnerEmail({ firstName, opponent, dinnerDate, gameDate, hostLocation, bringFood, bringDrinks, bringDesserts, notes }) {
+  const dinnerLabel = longDate(dinnerDate)
+  const gameLabel   = longDate(gameDate)
+  const bringing = [bringFood && 'Food', bringDrinks && 'Drinks', bringDesserts && 'Desserts'].filter(Boolean)
+
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:30px 28px 26px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🍽️</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">You're Hosting!</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:2.5px;text-transform:uppercase;">Emperor Football Team Dinner</div>
+    </div>`
+
+  return {
+    subject: `You're Hosting the Team Dinner${opponent ? ` — ${opponent} Week` : ''}! 🍽️`,
+    html: wrap({
+      title: 'Team Dinner — You\'re Hosting',
+      preheader: `Thank you for hosting the Emperor Football team dinner${dinnerLabel ? ` on ${dinnerLabel}` : ''}!`,
+      hero,
+      body: `
+        <h1>Thank You, ${esc(firstName || 'Emperor Family')}! 🏈</h1>
+        <p>You're signed up to host an <strong>Emperor Football team dinner</strong> — the night before the boys take the field. These dinners are where the brotherhood is built. On behalf of the whole program, thank you.</p>
+
+        <p class="section-label">YOUR DINNER</p>
+        <div style="margin-bottom:20px;">
+          ${dinnerLabel ? `<div class="info-row"><span class="info-label">Dinner (Thu):</span><span class="info-value">${dinnerLabel}</span></div>` : ''}
+          ${opponent ? `<div class="info-row"><span class="info-label">Game vs:</span><span class="info-value">${esc(opponent)}</span></div>` : ''}
+          ${gameLabel ? `<div class="info-row"><span class="info-label">Game (Fri):</span><span class="info-value">${gameLabel}</span></div>` : ''}
+          ${hostLocation ? `<div class="info-row"><span class="info-label">Location:</span><span class="info-value">${esc(hostLocation)}</span></div>` : ''}
+          ${bringing.length ? `<div class="info-row"><span class="info-label">Providing:</span><span class="info-value">${bringing.map(esc).join(', ')}</span></div>` : ''}
+        </div>
+
+        ${notes ? `<div class="notice"><p><strong>Your note:</strong> ${esc(notes)}</p></div>` : ''}
+
+        <div class="impact-bar">
+          <p class="impact-bar-title">Good to Know</p>
+          <p>Dinners are planned for <strong>25&ndash;50 athletes and coaches</strong>. Plan your menu, pick your spot, and rally a few other families to pitch in on food, drinks, and dessert. Questions? We're here to help.</p>
+        </div>
+
+        <a href="https://greenmileboosters.org/parents" class="btn">VIEW THE DINNER CALENDAR</a>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">Need to make a change? Contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>. Together we are Emperor Football.</p>
+      `
+    })
+  }
+}
+
 // ── Account Welcome / Registration Email ────────────────────────────────────
 // Sent when someone creates an email+password account with The Green Mile Boosters.
 export function accountWelcomeEmail({ firstName, email }) {

@@ -9,6 +9,7 @@ const NAV = [
   { to: '/sponsors', label: 'Sponsors' },
   { to: '/boosters', label: 'Boosters' },
   { to: '/volunteer', label: 'Volunteer' },
+  { to: '/parents', label: 'Parents' },
 ]
 
 // Footer keeps the fuller set so Donate and Shop stay reachable even though

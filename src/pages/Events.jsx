@@ -52,7 +52,11 @@ export default function Events() {
         ) : events.length > 0 ? (
           <>
             <SectionHeading eyebrow="Happening now" title="Register & Attend" />
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={`mt-12 grid gap-5 ${
+              events.length === 1 ? 'max-w-md mx-auto'
+              : events.length === 2 ? 'sm:grid-cols-2 max-w-3xl mx-auto'
+              : 'sm:grid-cols-2 lg:grid-cols-3'
+            }`}>
               {events.map((e, i) => {
                 const infoTo = String(e.meta?.slug || '').startsWith('country-nights')
                   ? '/events/country-nights' : `/events/${e.id}`

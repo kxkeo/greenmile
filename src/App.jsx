@@ -12,6 +12,7 @@ import CountryNights from './pages/CountryNights'
 import EventDetail from './pages/EventDetail'
 import EventCheckout from './pages/EventCheckout'
 import Volunteer from './pages/Volunteer'
+import Parents from './pages/Parents'
 import Sponsors from './pages/Sponsors'
 import SponsorDetail from './pages/SponsorDetail'
 import Donate from './pages/Donate'
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/events/register/:id" element={<EventCheckout />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/volunteer" element={<Volunteer />} />
+            <Route path="/parents" element={<Parents />} />
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/sponsors/:slug" element={<SponsorDetail />} />
             <Route path="/donate" element={<Donate />} />
