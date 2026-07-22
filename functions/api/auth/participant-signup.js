@@ -40,21 +40,22 @@ export async function onRequestPost({ request, env }) {
   const emailClean = email?.trim().toLowerCase() || null
   const phoneClean = phone?.trim() ? normalizePhone(phone) : null
 
-  if (!emailClean && !phoneClean) {
-    return json({ error: 'Email or phone number required' }, 400)
+  // Email is required for every account — the boosters send event reminders and
+  // team-dinner notifications by email, so an account must have one. Phone is an
+  // optional extra contact.
+  if (!emailClean) {
+    return json({ error: 'Email is required' }, 400)
   }
-  if (emailClean && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
     return json({ error: 'Enter a valid email address' }, 400)
   }
   if (phoneClean && phoneClean.length < 10) {
     return json({ error: 'Enter a valid 10-digit phone number' }, 400)
   }
-
-  // Email accounts require a password
-  if (emailClean && !password?.trim()) {
-    return json({ error: 'Password is required when using an email address' }, 400)
+  if (!password?.trim()) {
+    return json({ error: 'Password is required' }, 400)
   }
-  if (emailClean && password.trim().length < 6) {
+  if (password.trim().length < 6) {
     return json({ error: 'Password must be at least 6 characters' }, 400)
   }
 

@@ -65,15 +65,15 @@ export default function Signup() {
         </div>
         <div>
           <label className="label">Email</label>
-          <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="you@email.com" />
+          <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="you@email.com" required />
         </div>
         <div>
-          <label className="label">Phone <span className="text-zinc-600 normal-case">(or use phone-only with a PIN)</span></label>
+          <label className="label">Phone <span className="text-zinc-600 normal-case">(optional)</span></label>
           <input className="input" value={form.phone} onChange={set('phone')} placeholder="(559) 555-1234" />
         </div>
         <div>
-          <label className="label">Password <span className="text-zinc-600 normal-case">(required with email, min 6)</span></label>
-          <input className="input" type="password" value={form.password} onChange={set('password')} autoComplete="new-password" />
+          <label className="label">Password <span className="text-zinc-600 normal-case">(min 6 characters)</span></label>
+          <input className="input" type="password" value={form.password} onChange={set('password')} autoComplete="new-password" required minLength={6} />
         </div>
         <label className="flex items-center gap-2.5 text-sm text-zinc-300 cursor-pointer">
           <input type="checkbox" checked={form.newsletter} onChange={set('newsletter')} className="accent-field-500 w-4 h-4" />

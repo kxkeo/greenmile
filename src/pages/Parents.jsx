@@ -31,22 +31,26 @@ export default function Parents() {
   const [toast, setToast] = useState('')
 
   const load = () => {
-    fetch('/api/team-dinners')
+    // Members-only: the schedule endpoint requires a signed-in participant.
+    fetch('/api/team-dinners', { credentials: 'include' })
       .then(r => r.ok ? r.json() : { dinners: [] })
       .then(d => setDinners(Array.isArray(d.dinners) ? d.dinners : []))
       .catch(() => setDinners([]))
   }
 
   useEffect(() => {
-    load()
     fetch('/api/auth/participant-me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(d => setParticipant(d?.firstName ? d : null))
+      .then(d => {
+        const p = d?.firstName ? d : null
+        setParticipant(p)
+        if (p) load()               // only load the calendar once we know they're in
+        else setDinners([])
+      })
       .catch(() => setParticipant(null))
       .finally(() => setAuthChecked(true))
   }, [])
 
-  const openBookedCount = dinners?.filter(d => !d.isBye).length || 0
   const openCount = dinners?.filter(d => d.status === 'open' && !d.isBye).length || 0
 
   const onHostClick = (dinner) => {
@@ -90,43 +94,50 @@ export default function Parents() {
         </div>
       </section>
 
-      {/* Calendar */}
+      {/* Calendar — members only */}
       <section id="calendar" className="bg-charcoal-850 border-y border-white/[0.06] scroll-mt-20">
         <div className="section py-16">
-          <SectionHeading
-            eyebrow="On the calendar"
-            title="2026 Team Dinner Schedule"
-            intro="Dinners are the Thursday before each Friday game, planned for 25–50 athletes and coaches. Booked dates show the family hosting. Open dates are up for grabs — sign in to host."
-          />
-
-          {toast && (
-            <div className="mt-8 max-w-3xl mx-auto rounded-xl bg-field-500/15 border border-field-500/40 text-field-100 px-5 py-4 text-sm">
-              {toast}
-            </div>
-          )}
-
-          {dinners === undefined ? (
-            <div className="mt-12"><Loading label="Loading the dinner calendar…" /></div>
+          {!authChecked ? (
+            <div className="py-8"><Loading label="Loading…" /></div>
+          ) : !participant ? (
+            <MembersGate />
           ) : (
             <>
-              {authChecked && !participant && openCount > 0 && (
-                <p className="mt-8 text-center text-sm text-zinc-400">
-                  {openCount} open {openCount === 1 ? 'date' : 'dates'} still need a host.{' '}
-                  <button onClick={() => navigate('/my-account/login?next=/parents')} className="text-field-400 hover:text-field-300 underline underline-offset-2">Sign in to host one</button>.
-                </p>
+              <SectionHeading
+                eyebrow="On the calendar"
+                title="2026 Team Dinner Schedule"
+                intro="Dinners are the Thursday before each Friday game, planned for 25–50 athletes and coaches. Booked dates show the family hosting. Open dates are up for grabs — claim one to host."
+              />
+
+              {toast && (
+                <div className="mt-8 max-w-3xl mx-auto rounded-xl bg-field-500/15 border border-field-500/40 text-field-100 px-5 py-4 text-sm">
+                  {toast}
+                </div>
               )}
 
-              <div className="mt-10 max-w-3xl mx-auto space-y-3">
-                {dinners.map(d => (
-                  <DinnerRow key={d.id} dinner={d} onHost={() => onHostClick(d)} />
-                ))}
-              </div>
+              {dinners === undefined ? (
+                <div className="mt-12"><Loading label="Loading the dinner calendar…" /></div>
+              ) : (
+                <>
+                  {openCount > 0 && (
+                    <p className="mt-8 text-center text-sm text-zinc-400">
+                      Welcome, {participant.firstName} — {openCount} open {openCount === 1 ? 'date' : 'dates'} still {openCount === 1 ? 'needs' : 'need'} a host.
+                    </p>
+                  )}
 
-              <p className="mt-10 text-center text-sm text-zinc-500">
-                Questions or want to host with another family? Contact{' '}
-                <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
-                — or Parent Adela (559) 562-6197 or Parent Anabel (559) 679-5684.
-              </p>
+                  <div className="mt-10 max-w-3xl mx-auto space-y-3">
+                    {dinners.map(d => (
+                      <DinnerRow key={d.id} dinner={d} onHost={() => onHostClick(d)} />
+                    ))}
+                  </div>
+
+                  <p className="mt-10 text-center text-sm text-zinc-500">
+                    Questions or want to host with another family? Contact{' '}
+                    <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
+                    — or Parent Adela (559) 562-6197 or Parent Anabel (559) 679-5684.
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>
@@ -140,6 +151,29 @@ export default function Parents() {
         />
       )}
     </>
+  )
+}
+
+function MembersGate() {
+  return (
+    <div className="max-w-lg mx-auto text-center">
+      <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-field-500 to-field-800 grid place-items-center text-3xl shadow-glow">
+        🔒
+      </div>
+      <Eyebrow className="mt-6 mb-2">Emperor Families Only</Eyebrow>
+      <h2 className="display text-white text-3xl sm:text-4xl">Sign In to See the Calendar</h2>
+      <p className="mt-4 text-zinc-400 leading-relaxed">
+        The team-dinner schedule and hosting sign-up are for signed-in Emperor
+        football families. Create a free account with your email — that's how we send
+        dinner reminders and game-week notifications — then you can view the calendar
+        and claim a night to host.
+      </p>
+      <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+        <Button to="/my-account/signup?next=/parents" size="lg">Create Account</Button>
+        <Button to="/my-account/login?next=/parents" variant="outline" size="lg">Sign In</Button>
+      </div>
+      <p className="mt-5 text-xs text-zinc-500">Free to join · Email required for dinner notifications</p>
+    </div>
   )
 }
 

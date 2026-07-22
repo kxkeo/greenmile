@@ -39,9 +39,6 @@ export async function onRequest(context) {
     '/api/campaigns',
     '/api/players/active-roster',
     '/api/season-calendar',
-    // Team dinners: GET schedule is public; POST /book self-checks the
-    // participant session inside the handler.
-    '/api/team-dinners',
     // Store public
     '/api/store/products',
     '/api/store/shipping-rate',
@@ -68,6 +65,9 @@ export async function onRequest(context) {
     '/api/events/payment-intent',
     '/api/registrations/event',
     '/api/stripe/create-payment-intent',
+    // Team dinners are members-only — both the schedule (GET) and booking
+    // (POST /book) require a signed-in participant.
+    '/api/team-dinners',
   ]
   if (participantRoutes.some(p => url.pathname === p || url.pathname.startsWith(p + '/'))) {
     const cookie = request.headers.get('Cookie') || ''
