@@ -191,20 +191,122 @@ function DashboardSection() {
 
 function EventsSection() {
   const { loading, data } = useData('/api/admin/campaigns')
-  if (loading) return <Loading label="Loading events…" />
   const rows = Array.isArray(data) ? data : []
   return (
-    <Table
-      empty="No events yet. Country Nights and other campaigns will appear here."
-      rows={rows}
-      cols={[
-        { key: 'title', label: 'Event', render: r => <span className="text-white font-heading uppercase tracking-wide">{r.title}</span> },
-        { key: 'type', label: 'Type' },
-        { key: 'event_date', label: 'Date', render: r => dateStr(r.event_date) },
-        { key: 'price', label: 'Price', render: r => r.price_cents ? money(r.price_cents / 100) : 'Free' },
-        { key: 'status', label: 'Status', render: r => <StatusPill status={r.status} /> },
-      ]}
-    />
+    <div className="space-y-10">
+      <div>
+        <h2 className="font-heading uppercase tracking-wide text-white mb-4">Campaigns &amp; Ticketed Events</h2>
+        {loading ? <Loading label="Loading events…" /> : (
+          <Table
+            empty="No events yet. Country Nights and other campaigns will appear here."
+            rows={rows}
+            cols={[
+              { key: 'title', label: 'Event', render: r => <span className="text-white font-heading uppercase tracking-wide">{r.title}</span> },
+              { key: 'type', label: 'Type' },
+              { key: 'event_date', label: 'Date', render: r => dateStr(r.event_date) },
+              { key: 'price', label: 'Price', render: r => r.price_cents ? money(r.price_cents / 100) : 'Free' },
+              { key: 'status', label: 'Status', render: r => <StatusPill status={r.status} /> },
+            ]}
+          />
+        )}
+      </div>
+      <SeasonCalendarEditor />
+    </div>
+  )
+}
+
+// Editor for the public Events page "Season at a Glance" cards.
+function SeasonCalendarEditor() {
+  const [items, setItems] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const [busy, setBusy] = useState('')
+
+  const load = () =>
+    getJSON('/api/admin/season-calendar')
+      .then(d => setItems(Array.isArray(d?.items) ? d.items : []))
+      .catch(() => setItems([]))
+  useEffect(() => { load() }, [])
+
+  const update = (i, key, val) => setItems(items.map((it, idx) => idx === i ? { ...it, [key]: val } : it))
+  const addCard = () => setItems([...(items || []), { icon: '🏈', when: '', title: '', body: '' }])
+  const removeCard = i => setItems(items.filter((_, idx) => idx !== i))
+
+  const save = async () => {
+    setMsg(null); setBusy('save')
+    try {
+      const res = await fetch('/api/admin/season-calendar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ items }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Save failed')
+      setItems(data.items)
+      setMsg({ ok: true, text: 'Saved — the Events page is updated.' })
+    } catch (e) { setMsg({ ok: false, text: e.message }) } finally { setBusy('') }
+  }
+
+  const reset = async () => {
+    setMsg(null); setBusy('reset')
+    try {
+      const res = await fetch('/api/admin/season-calendar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ reset: true }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Reset failed')
+      setItems(data.items)
+      setMsg({ ok: true, text: 'Restored the default calendar.' })
+    } catch (e) { setMsg({ ok: false, text: e.message }) } finally { setBusy('') }
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-heading uppercase tracking-wide text-white">Season at a Glance</h2>
+          <p className="text-xs text-zinc-500 mt-1">The calendar cards on the public Events page. Up to 12.</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={addCard} disabled={!items || items.length >= 12}>Add Card</Button>
+      </div>
+
+      {msg && (
+        <div className={`mb-4 rounded-lg text-sm px-4 py-3 border ${msg.ok
+          ? 'bg-field-900/40 border-field-500/30 text-field-300'
+          : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>{msg.text}</div>
+      )}
+
+      {items === null ? <Loading label="Loading calendar…" /> : (
+        <div className="space-y-4">
+          {items.map((it, i) => (
+            <div key={i} className="card p-4">
+              <div className="flex gap-3">
+                <input
+                  className="input !w-16 text-center !text-xl !px-2" value={it.icon}
+                  onChange={e => update(i, 'icon', e.target.value)} aria-label="Icon" />
+                <input
+                  className="input" placeholder="When (e.g. October)" value={it.when}
+                  onChange={e => update(i, 'when', e.target.value)} />
+                <button onClick={() => removeCard(i)}
+                  className="shrink-0 w-11 h-11 grid place-items-center rounded-lg border border-white/10 text-zinc-400 hover:text-red-300 hover:border-red-500/40 transition"
+                  aria-label="Remove card">✕</button>
+              </div>
+              <input
+                className="input mt-3" placeholder="Title" value={it.title}
+                onChange={e => update(i, 'title', e.target.value)} />
+              <textarea
+                className="input mt-3 min-h-[70px]" placeholder="Description" value={it.body}
+                onChange={e => update(i, 'body', e.target.value)} />
+            </div>
+          ))}
+          {items.length === 0 && <EmptyCard>No cards. Add one to fill the Events calendar.</EmptyCard>}
+
+          <div className="flex flex-wrap gap-3 pt-1">
+            <Button size="md" onClick={save} disabled={busy === 'save'}>{busy === 'save' ? 'Saving…' : 'Save Calendar'}</Button>
+            <Button size="md" variant="outline" onClick={reset} disabled={busy === 'reset'}>{busy === 'reset' ? 'Resetting…' : 'Reset to Default'}</Button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

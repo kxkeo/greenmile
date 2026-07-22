@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, Loading } from '../components/ui'
 import { IMG } from '../content/images'
 
-// Curated fallback events — football-relevant booster calendar. Shown when the
-// campaigns/events API has nothing active yet so the page never looks empty.
+// Seasonal "Season at a Glance" cards. These come from /api/season-calendar
+// (editable in the admin Events section); this local copy is the fallback if
+// the request fails so the page never looks empty.
 const FALLBACK = [
   { icon: '🏈', title: 'Meet the Emperors', when: 'August', body: 'Kick off the season — meet the players and coaches, grab gear, and join the boosters.' },
   { icon: '🌭', title: 'Home Opener Tailgate', when: 'September', body: 'Food, music, and Emperor spirit before the first home game on the Green Mile.' },
@@ -16,6 +17,7 @@ const FALLBACK = [
 
 export default function Events() {
   const [events, setEvents] = useState(undefined)
+  const [calendar, setCalendar] = useState(FALLBACK)
 
   useEffect(() => {
     fetch('/api/campaigns')
@@ -25,6 +27,11 @@ export default function Events() {
         setEvents(active)
       })
       .catch(() => setEvents([]))
+
+    fetch('/api/season-calendar')
+      .then(r => r.ok ? r.json() : null)
+      .then(list => { if (Array.isArray(list) && list.length) setCalendar(list) })
+      .catch(() => {})
   }, [])
 
   return (
@@ -74,7 +81,7 @@ export default function Events() {
         )}
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FALLBACK.map(e => (
+          {calendar.map(e => (
             <div key={e.title} className="card-hover p-7">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-3xl">{e.icon}</span>

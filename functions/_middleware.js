@@ -38,6 +38,7 @@ export async function onRequest(context) {
     '/api/events',
     '/api/campaigns',
     '/api/players/active-roster',
+    '/api/season-calendar',
     // Store public
     '/api/store/products',
     '/api/store/shipping-rate',
