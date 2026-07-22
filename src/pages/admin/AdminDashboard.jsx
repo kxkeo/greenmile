@@ -402,16 +402,39 @@ function SettingsPanel() {
   const [resendKey, setResendKey] = useState('')
   const [testTo, setTestTo] = useState('')
   const [newPw, setNewPw] = useState('')
+  const [smtp, setSmtp] = useState({ host: '', user: '', port: '465', pass: '' })
   const [msg, setMsg] = useState(null) // { ok, text }
   const [busy, setBusy] = useState('')
 
   const loadConfig = () =>
     fetch('/api/admin/config', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(setConfig)
+      .then(c => {
+        setConfig(c)
+        if (c) setSmtp(s => ({ ...s, host: c.smtp_host || '', user: c.smtp_user || 'noreply@greenmileboosters.org', port: String(c.smtp_port || 465) }))
+      })
       .catch(() => setConfig(null))
 
   useEffect(() => { loadConfig() }, [])
+
+  const saveSmtp = async () => {
+    setMsg(null); setBusy('smtp')
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ action: 'set_smtp', value: {
+          host: smtp.host.trim(), user: smtp.user.trim(), port: smtp.port.trim(),
+          secure: parseInt(smtp.port, 10) === 465,
+          ...(smtp.pass ? { pass: smtp.pass } : {}),
+        } }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Save failed')
+      setMsg({ ok: true, text: smtp.host.trim() ? 'MXroute SMTP saved — receipts now send through it.' : 'SMTP cleared — using Resend.' })
+      setSmtp(s => ({ ...s, pass: '' }))
+      loadConfig()
+    } catch (e) { setMsg({ ok: false, text: e.message }) } finally { setBusy('') }
+  }
 
   const post = async (action, value, busyKey, okText) => {
     setMsg(null); setBusy(busyKey)
@@ -529,36 +552,85 @@ function SettingsPanel() {
           </div>
         )}
 
-        {/* EMAIL — Resend */}
+        {/* EMAIL — MXroute SMTP + Resend */}
         {tab === 'email' && (
-          <div className="max-w-xl">
-            <label className="label">Resend API key (email receipts)</label>
-            <div className="text-xs mb-2">
-              {config === null ? <span className="text-zinc-600">Checking…</span>
-                : config?.resend_configured
-                  ? <span className="text-field-400">✓ Configured {config.resend_key_hint}{config.resend_from_env ? ' (set via environment variable)' : ''}</span>
-                  : <span className="text-amber-400">Not configured — receipts will not send</span>}
+          <div className="max-w-xl space-y-8">
+            {/* MXroute SMTP (preferred) */}
+            <div>
+              <label className="label">MXroute SMTP (send from noreply@greenmileboosters.org)</label>
+              <div className="text-xs mb-3">
+                {config === null ? <span className="text-zinc-600">Checking…</span>
+                  : config?.smtp_configured
+                    ? <span className="text-field-400">✓ Active — receipts send through {config.smtp_host}{config.smtp_from_env ? ' (from environment variables)' : ''}</span>
+                    : <span className="text-amber-400">Not set — receipts fall back to Resend</span>}
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="text-[0.7rem] text-zinc-500 mb-1">SMTP host</div>
+                  <input className="input" placeholder="e.g. mail.mxrouting.net" value={smtp.host}
+                         onChange={e => setSmtp({ ...smtp, host: e.target.value })} autoComplete="off" />
+                </div>
+                <div>
+                  <div className="text-[0.7rem] text-zinc-500 mb-1">Port</div>
+                  <select className="input" value={smtp.port} onChange={e => setSmtp({ ...smtp, port: e.target.value })}>
+                    <option value="465">465 (SSL)</option>
+                    <option value="587">587 (STARTTLS)</option>
+                  </select>
+                </div>
+                <div>
+                  <div className="text-[0.7rem] text-zinc-500 mb-1">Username (full email)</div>
+                  <input className="input" placeholder="noreply@greenmileboosters.org" value={smtp.user}
+                         onChange={e => setSmtp({ ...smtp, user: e.target.value })} autoComplete="off" />
+                </div>
+                <div>
+                  <div className="text-[0.7rem] text-zinc-500 mb-1">Mailbox password {config?.smtp_pass_set && <span className="text-field-400">· saved</span>}</div>
+                  <input className="input" type="password" placeholder={config?.smtp_pass_set ? '•••••• (unchanged)' : 'mailbox password'} value={smtp.pass}
+                         onChange={e => setSmtp({ ...smtp, pass: e.target.value })} autoComplete="new-password" />
+                </div>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button size="md" onClick={saveSmtp} disabled={busy === 'smtp' || (!smtp.host.trim() && !config?.smtp_configured)}>
+                  {busy === 'smtp' ? 'Saving…' : 'Save SMTP'}
+                </Button>
+                {config?.smtp_configured && (
+                  <Button size="md" variant="outline" onClick={() => { setSmtp({ host: '', user: 'noreply@greenmileboosters.org', port: '465', pass: '' }); saveSmtp() }} disabled={busy === 'smtp'}>
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-zinc-600">For deliverability, make sure SPF and DKIM for the domain are set in MXroute. The password is stored server-side and never shown again.</p>
             </div>
-            <div className="flex gap-2">
-              <input className="input" type="password" placeholder="re_…" value={resendKey}
-                     onChange={e => setResendKey(e.target.value)} autoComplete="off" />
-              <Button size="md" onClick={saveResend} disabled={busy === 'key' || !resendKey.trim()}>
-                {busy === 'key' ? 'Saving…' : 'Save'}
-              </Button>
+
+            {/* Resend (fallback) */}
+            <div className="border-t border-white/[0.07] pt-6">
+              <label className="label">Resend API key (fallback)</label>
+              <div className="text-xs mb-2">
+                {config === null ? <span className="text-zinc-600">Checking…</span>
+                  : config?.resend_configured
+                    ? <span className="text-field-400">✓ Configured {config.resend_key_hint}{config.resend_from_env ? ' (set via environment variable)' : ''}</span>
+                    : <span className="text-zinc-500">Optional — used only if SMTP isn't set or fails</span>}
+              </div>
+              <div className="flex gap-2">
+                <input className="input" type="password" placeholder="re_…" value={resendKey}
+                       onChange={e => setResendKey(e.target.value)} autoComplete="off" />
+                <Button size="md" variant="outline" onClick={saveResend} disabled={busy === 'key' || !resendKey.trim()}>
+                  {busy === 'key' ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
             </div>
-            {config?.resend_from_env && (
-              <p className="mt-2 text-xs text-zinc-600">The environment variable takes priority over a key saved here.</p>
-            )}
-            <div className="mt-5">
+
+            {/* Test */}
+            <div className="border-t border-white/[0.07] pt-6">
               <label className="label">Send a test receipt to</label>
               <div className="flex gap-2">
                 <input className="input" type="email" placeholder="you@email.com" value={testTo}
                        onChange={e => setTestTo(e.target.value)} />
-                <Button size="md" variant="outline" onClick={sendTest}
+                <Button size="md" onClick={sendTest}
                         disabled={busy === 'test' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo.trim())}>
-                  {busy === 'test' ? 'Sending…' : 'Test'}
+                  {busy === 'test' ? 'Sending…' : 'Send Test'}
                 </Button>
               </div>
+              <p className="mt-2 text-xs text-zinc-600">Sends through whichever transport is active (SMTP if set, otherwise Resend).</p>
             </div>
           </div>
         )}

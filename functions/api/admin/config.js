@@ -12,6 +12,10 @@ export async function onRequestGet({ env }) {
   const allowedIPs  = await env.SESSIONS.get('config:geo_allow_ips')
   const resendKey   = env.RESEND_API_KEY || await env.SESSIONS.get('config:resend_api_key')
   const stripeKey   = env.STRIPE_SECRET_KEY || await env.SESSIONS.get('config:stripe_secret_key')
+  const smtpHost    = env.SMTP_HOST || await env.SESSIONS.get('config:smtp_host')
+  const smtpPass    = env.SMTP_PASS || await env.SESSIONS.get('config:smtp_pass')
+  const smtpUser    = env.SMTP_USER || await env.SESSIONS.get('config:smtp_user')
+  const smtpPort    = env.SMTP_PORT || await env.SESSIONS.get('config:smtp_port')
   // The publishable key is baked into the frontend at build time, so we can
   // only report whether the build was compiled with one.
   const stripePub   = env.VITE_STRIPE_PUBLISHABLE_KEY || ''
@@ -26,6 +30,13 @@ export async function onRequestGet({ env }) {
     stripe_key_hint:   stripeKey ? `${String(stripeKey).slice(0, 7)}…${String(stripeKey).slice(-4)}` : null,
     stripe_from_env:   Boolean(env.STRIPE_SECRET_KEY),
     stripe_mode:       stripeKey ? (String(stripeKey).startsWith('sk_live') ? 'live' : 'test') : null,
+    // SMTP (MXroute) — never echo the password.
+    smtp_configured:   Boolean(smtpHost && smtpPass),
+    smtp_host:         smtpHost || null,
+    smtp_user:         smtpUser || 'noreply@greenmileboosters.org',
+    smtp_port:         smtpPort ? parseInt(smtpPort, 10) : 465,
+    smtp_pass_set:     Boolean(smtpPass),
+    smtp_from_env:     Boolean(env.SMTP_HOST || env.SMTP_PASS),
   })
 }
 
@@ -70,6 +81,41 @@ export async function onRequestPost({ request, env }) {
     }
     await env.SESSIONS.put('config:stripe_secret_key', key)
     return json({ ok: true, stripe_configured: true, stripe_key_hint: `${key.slice(0, 7)}…${key.slice(-4)}`, stripe_mode: key.startsWith('sk_live') ? 'live' : 'test' })
+  }
+
+  if (action === 'set_smtp') {
+    const v = body.value || {}
+    const host = String(v.host || '').trim()
+    const user = String(v.user || '').trim()
+    const port = String(v.port || '').trim()
+    const secure = v.secure == null ? '' : String(Boolean(v.secure))
+    const auth = String(v.auth || '').trim().toLowerCase()
+    const pass = v.pass != null ? String(v.pass) : null // only overwrite when provided
+
+    if (!host) {
+      // Clear the whole SMTP config → email falls back to Resend.
+      await Promise.all([
+        env.SESSIONS.delete('config:smtp_host'),
+        env.SESSIONS.delete('config:smtp_user'),
+        env.SESSIONS.delete('config:smtp_port'),
+        env.SESSIONS.delete('config:smtp_secure'),
+        env.SESSIONS.delete('config:smtp_auth'),
+        env.SESSIONS.delete('config:smtp_pass'),
+      ])
+      return json({ ok: true, smtp_configured: false })
+    }
+
+    await env.SESSIONS.put('config:smtp_host', host)
+    await env.SESSIONS.put('config:smtp_user', user || 'noreply@greenmileboosters.org')
+    if (port)   await env.SESSIONS.put('config:smtp_port', port)
+    if (secure) await env.SESSIONS.put('config:smtp_secure', secure)
+    if (auth)   await env.SESSIONS.put('config:smtp_auth', auth)
+    // Password is only written when the admin actually typed a new one, so
+    // saving other fields doesn't wipe a previously-stored password.
+    if (pass) await env.SESSIONS.put('config:smtp_pass', pass)
+
+    const havePass = pass ? true : Boolean(await env.SESSIONS.get('config:smtp_pass'))
+    return json({ ok: true, smtp_configured: Boolean(host && havePass), smtp_pass_set: havePass })
   }
 
   if (action === 'set_admin_password') {
