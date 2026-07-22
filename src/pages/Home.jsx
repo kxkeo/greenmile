@@ -58,7 +58,11 @@ export default function Home() {
               <Button to="/team" variant="ghost" size="md">See the team →</Button>
             </div>
           </div>
-          <StatStrip stats={STATS} />
+          <div>
+            <img src={IMG.ballTurf} alt="Game ball on the turf as the Emperors take a knee behind it"
+                 className="rounded-2xl border border-white/[0.07] w-full object-cover aspect-[4/3] mb-5" />
+            <StatStrip stats={STATS} />
+          </div>
         </div>
       </section>
 

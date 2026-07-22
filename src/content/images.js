@@ -9,5 +9,6 @@ export const IMG = {
   gear:        '/img/home-of-emperors.jpg', // "Home of the Emperors" grandstand — Donate/Shop hero
   crowd:       '/img/crowd.jpg',            // packed stands at sunset — Boosters hero / featured card
   sideline:    '/img/sideline.jpg',         // sideline under the lights — Home "Friday Night" band
+  ballTurf:    '/img/ball-turf.jpg',        // game ball on the turf, team kneeling — Home mission
   logo:        '/img/logo.png',             // DHS Emperors crest
 }
