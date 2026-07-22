@@ -1,3 +1,5 @@
+import { tooManyAttempts, recordFailure, clientIp } from './_lib/rateLimit.js'
+
 export async function onRequest(context) {
   const { request, env, next } = context
   const url = new URL(request.url)
@@ -21,6 +23,35 @@ export async function onRequest(context) {
 
   // Only guard /api/* routes
   if (!url.pathname.startsWith('/api/')) return next()
+
+  // ── CSRF defense-in-depth + general write throttle (all state-changing API) ─
+  // Runs before auth/routing so it protects every POST/PUT/PATCH/DELETE at once.
+  const method = request.method.toUpperCase()
+  const mutating = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
+  if (mutating) {
+    // Same-origin check: browsers always attach Origin to cross-site writes, so
+    // a present-but-mismatched Origin is a cross-site request — reject it. On
+    // top of SameSite=Lax cookies this closes the CSRF gap. Missing Origin
+    // (server-to-server, some same-origin cases) is allowed through.
+    const origin = request.headers.get('Origin')
+    if (origin) {
+      let ok = false
+      try { ok = new URL(origin).host === url.host } catch { ok = false }
+      if (!ok) {
+        return new Response(JSON.stringify({ error: 'Cross-origin request blocked' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } })
+      }
+    }
+    // Broad per-IP write throttle so no single client can hammer any write
+    // endpoint (spam registrations, mass account creation, PaymentIntent abuse).
+    // Auth endpoints keep their own stricter limiter on top of this.
+    const wkey = `apiwrite:${clientIp(request)}`
+    if (await tooManyAttempts(env, wkey, 40, 60)) {
+      return new Response(JSON.stringify({ error: 'Too many requests. Please slow down and try again shortly.' }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } })
+    }
+    await recordFailure(env, wkey, 60)
+  }
 
   // ── Public routes — no session needed ────────────────────────────────────
   const open = [

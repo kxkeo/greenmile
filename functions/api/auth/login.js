@@ -7,6 +7,17 @@ import { tooManyAttempts, recordFailure, clearAttempts, clientIp } from '../../_
 const RL_MAX = 12
 const RL_WINDOW = 300 // 12 failed attempts / 5 min per IP
 
+// Length-independent comparison so a wrong admin password can't be probed by
+// response timing.
+function constantTimeEqual(a, b) {
+  const enc = new TextEncoder()
+  const x = enc.encode(String(a)), y = enc.encode(String(b))
+  const len = Math.max(x.length, y.length)
+  let diff = x.length ^ y.length
+  for (let i = 0; i < len; i++) diff |= (x[i] || 0) ^ (y[i] || 0)
+  return diff === 0
+}
+
 const TTL = {
   admin:   60 * 15,        // 15 minutes
   gameday: 60 * 60 * 4,    // 4 hours
@@ -45,7 +56,7 @@ export async function onRequestPost(context) {
     const disabled = await env.SESSIONS.get('admin_disabled')
     if (disabled === '1') return json({ error: 'Account is disabled' }, 401)
     if (!storedPw) return json({ error: 'Admin login is not configured.' }, 503)
-    if (password !== storedPw) return await fail()
+    if (!constantTimeEqual(password, storedPw)) return await fail()
     await clearAttempts(env, rlId, RL_WINDOW)
     return createSession(env, { id: 0, email: 'admin', firstName: 'Admin', isAdmin: true, role: 'admin', loginContext }, ttl)
   }
