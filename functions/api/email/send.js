@@ -2,8 +2,12 @@
 // Usage: await sendEmail(env, { to, subject, html })
 
 export async function sendEmail(env, { to, subject, html, replyTo = 'info@greenmileboosters.org' }) {
-  if (!env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not set')
+  // Environment secret wins; otherwise fall back to the key saved from the
+  // admin Settings panel (KV: config:resend_api_key).
+  const apiKey = env.RESEND_API_KEY
+    || await env.SESSIONS.get('config:resend_api_key').catch(() => null)
+  if (!apiKey) {
+    console.error('Resend API key not configured (env or admin settings)')
     return { ok: false, error: 'Email service not configured' }
   }
 
@@ -11,7 +15,7 @@ export async function sendEmail(env, { to, subject, html, replyTo = 'info@greenm
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
