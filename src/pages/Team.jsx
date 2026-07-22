@@ -4,16 +4,16 @@ import { IMG } from '../content/images'
 // 2026 Dinuba Emperors football schedule (from @dinuba_football).
 // home: true = home game (green), false = away (white), null = bye week.
 const SCHEDULE = [
-  { opponent: 'Redwood',          date: 'Aug 21', home: true },
-  { opponent: 'Reedley',          date: 'Aug 28', home: true },
+  { opponent: 'Redwood',          date: 'Aug 21', home: false },
+  { opponent: 'Reedley',          date: 'Aug 28', home: false },
   { opponent: 'Sunnyside',        date: 'Sep 4',  home: true },
-  { opponent: 'Golden West',      date: 'Sep 11', home: true },
+  { opponent: 'Golden West',      date: 'Sep 11', home: false },
   { opponent: 'Porterville',      date: 'Sep 18', home: true },
   { opponent: 'Bye Week',         date: 'Sep 25', home: null },
   { opponent: 'Exeter',           date: 'Oct 2',  home: true },
-  { opponent: 'Immanuel',         date: 'Oct 9',  home: true },
-  { opponent: 'Kerman',           date: 'Oct 16', home: true },
-  { opponent: 'Washington Union', date: 'Oct 23', home: false },
+  { opponent: 'Immanuel',         date: 'Oct 9',  home: false },
+  { opponent: 'Kerman',           date: 'Oct 16', home: false },
+  { opponent: 'Washington Union', date: 'Oct 23', home: true },
   { opponent: 'Kingsburg',        date: 'Oct 30', home: true },
 ]
 
@@ -93,7 +93,7 @@ export default function Team() {
                   </span>
                 )}
                 <span className="font-heading uppercase tracking-wide text-white">
-                  {g.home === null ? g.opponent : `vs ${g.opponent}`}
+                  {g.home === null ? g.opponent : `${g.home ? 'vs' : 'at'} ${g.opponent}`}
                 </span>
               </div>
               <div className="font-heading uppercase tracking-wide text-sm text-field-400 whitespace-nowrap">{g.date}</div>

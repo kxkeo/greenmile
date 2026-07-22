@@ -73,9 +73,9 @@ export function StatStrip({ stats }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06] rounded-2xl overflow-hidden border border-white/[0.06]">
       {stats.map((s) => (
-        <div key={s.label} className="bg-charcoal-850 px-6 py-8 text-center">
-          <div className="display text-field-400 text-4xl sm:text-5xl">{s.value}</div>
-          <div className="mt-2 font-heading uppercase tracking-wider text-[0.7rem] text-zinc-400">{s.label}</div>
+        <div key={s.label} className="bg-charcoal-850 px-2 sm:px-4 py-8 text-center">
+          <div className="display text-field-400 text-3xl sm:text-4xl leading-none tracking-tight">{s.value}</div>
+          <div className="mt-2 font-heading uppercase tracking-wider text-[0.7rem] text-zinc-400 leading-tight">{s.label}</div>
         </div>
       ))}
     </div>
