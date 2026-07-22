@@ -130,7 +130,11 @@ function FeaturedEvent({ featured }) {
             )}
             {featured.description && <p className="mt-4 text-zinc-400 leading-relaxed">{featured.description}</p>}
             <div className="mt-6">
-              <Button to="/events" size="md">View details →</Button>
+              <Button
+                to={String(featured.meta?.slug || '').startsWith('country-nights') ? '/events/country-nights' : '/events'}
+                size="md">
+                {featured.price_cents ? 'Get Tickets →' : 'View details →'}
+              </Button>
             </div>
           </div>
         </div>

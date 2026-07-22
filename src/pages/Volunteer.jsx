@@ -105,7 +105,7 @@ export default function Volunteer() {
         subtitle="Create your free account to sign up for volunteer shifts, manage your membership, and stay in the loop all season."
       >
         <Button to="/my-account/signup" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Create My Account →</Button>
-        <Button href="mailto:info@greenmileboosters.com" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Email the Boosters</Button>
+        <Button href="mailto:info@greenmileboosters.org" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Email the Boosters</Button>
       </CTABand>
     </>
   )

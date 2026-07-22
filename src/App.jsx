@@ -8,6 +8,8 @@ import Home from './pages/Home'
 import Boosters from './pages/Boosters'
 import Team from './pages/Team'
 import Events from './pages/Events'
+import CountryNights from './pages/CountryNights'
+import EventCheckout from './pages/EventCheckout'
 import Volunteer from './pages/Volunteer'
 import Donate from './pages/Donate'
 import DonateCheckout from './pages/DonateCheckout'
@@ -34,6 +36,8 @@ export default function App() {
             <Route path="/boosters" element={<Boosters />} />
             <Route path="/team" element={<Team />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/events/country-nights" element={<CountryNights />} />
+            <Route path="/events/register/:id" element={<EventCheckout />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/donate/checkout" element={<DonateCheckout />} />

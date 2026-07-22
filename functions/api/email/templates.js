@@ -96,8 +96,8 @@ function wrap({ title, preheader = '', hero = '', body }) {
       </div>
       <div class="footer">
         <p class="footer-brand">The Green Mile Boosters</p>
-        <p><a href="https://greenmileboosters.com">greenmileboosters.com</a> &middot; <a href="mailto:info@greenmileboosters.com">info@greenmileboosters.com</a></p>
-        <p style="margin-top:8px;color:#9ca3af;font-size:11px;">Please do not reply to this email. Contact us at info@greenmileboosters.com</p>
+        <p><a href="https://greenmileboosters.org">greenmileboosters.org</a> &middot; <a href="mailto:info@greenmileboosters.org">info@greenmileboosters.org</a></p>
+        <p style="margin-top:8px;color:#9ca3af;font-size:11px;">Please do not reply to this email. Contact us at info@greenmileboosters.org</p>
         <p style="color:#9ca3af;font-size:11px;">You are receiving this because you registered with The Green Mile Boosters.</p>
       </div>
     </div>
@@ -127,9 +127,9 @@ export function pinEmail({ firstName, pin, eventType, isPassword }) {
         body: `
           <h1>Welcome, ${esc(firstName)}!</h1>
           <p>Your The Green Mile Boosters account has been created. Sign in anytime at the link below using your email address and the password you created.</p>
-          <a href="https://greenmileboosters.com/my-account/login" class="btn">SIGN IN TO MY ACCOUNT</a>
+          <a href="https://greenmileboosters.org/my-account/login" class="btn">SIGN IN TO MY ACCOUNT</a>
           <div class="divider"></div>
-          <p style="font-size:13px;color:${BASE.gray};">If you did not create this account, contact us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+          <p style="font-size:13px;color:${BASE.gray};">If you did not create this account, contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
         `
       })
     }
@@ -157,10 +157,10 @@ export function pinEmail({ firstName, pin, eventType, isPassword }) {
         <p class="section-label">REGISTERED FOR</p>
         <p style="font-family:Arial,Helvetica,sans-serif;font-size:18px;color:${BASE.green};font-weight:700;margin:0 0 24px;">${eventLabel}</p>
 
-        <a href="https://greenmileboosters.com/my-account/login" class="btn">SIGN IN TO MY ACCOUNT</a>
+        <a href="https://greenmileboosters.org/my-account/login" class="btn">SIGN IN TO MY ACCOUNT</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">If you did not register with The Green Mile Boosters, you can safely ignore this email. For help, contact us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">If you did not register with The Green Mile Boosters, you can safely ignore this email. For help, contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -228,10 +228,10 @@ export function golfConfirmationEmail({ firstName, lastName, email, entryType, s
           <p><strong>An account has been created for you.</strong> Check your email for your PIN &mdash; you'll use it to log in and view your registration details.</p>
         </div>` : ''}
 
-        <a href="https://greenmileboosters.com/my-account/login" class="btn">VIEW MY ACCOUNT</a>
+        <a href="https://greenmileboosters.org/my-account/login" class="btn">VIEW MY ACCOUNT</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -290,10 +290,10 @@ export function campConfirmationEmail({ parentFirst, parentLast, email, players,
           <p><strong>An account has been created for you.</strong> Check your email for your PIN &mdash; you'll use it to log in and manage your registration.</p>
         </div>` : ''}
 
-        <a href="https://greenmileboosters.com/my-account/login" class="btn">VIEW MY ACCOUNT</a>
+        <a href="https://greenmileboosters.org/my-account/login" class="btn">VIEW MY ACCOUNT</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -340,7 +340,7 @@ export function taxReceiptEmail({ email, amount, donationDate }) {
         </div>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions about your donation? Contact us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions about your donation? Contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -397,10 +397,10 @@ export function golfReminderEmail({ firstName, eventDate, location, shotgunTime,
           <div class="info-row"><span class="info-label">Arrival:</span><span class="info-value">Please arrive 30 minutes early</span></div>
         </div>
 
-        <a href="https://greenmileboosters.com/my-account/login" class="btn">VIEW MY REGISTRATION</a>
+        <a href="https://greenmileboosters.org/my-account/login" class="btn">VIEW MY REGISTRATION</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -479,10 +479,10 @@ export function eventConfirmationEmail({ firstName, campaignTitle, campaignType,
           <p><strong>Payment reminder:</strong> You selected Pay at Event. Please bring your payment on the day of the event. We accept cash and check.</p>
         </div>` : ''}
 
-        <a href="https://greenmileboosters.com/my-account/registrations" class="btn">VIEW MY REGISTRATIONS</a>
+        <a href="https://greenmileboosters.org/my-account/registrations" class="btn">VIEW MY REGISTRATIONS</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -537,10 +537,10 @@ export function donationAckEmail({ firstName, lastName, amount, tierLabel, donat
           <p>The Green Mile Boosters is a 501(c)(3) nonprofit organization. No goods or services were provided in exchange for this contribution. Please retain this email for your records.</p>
         </div>
 
-        <a href="https://greenmileboosters.com/events" class="btn">SEE UPCOMING EVENTS</a>
+        <a href="https://greenmileboosters.org/events" class="btn">SEE UPCOMING EVENTS</a>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.com" style="color:${BASE.green};">info@greenmileboosters.com</a>.</p>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
       `
     })
   }
@@ -592,7 +592,7 @@ export function orderConfirmationEmail({ order, items }) {
       <div class="section-label">Payment</div>
       <p>${order.payment_method === 'stripe' ? '✅ Paid by card' : '💵 Cash — due at ' + (order.fulfillment === 'pickup' ? 'pickup' : 'delivery')}</p>
       <div class="divider"></div>
-      <p style="font-size:13px;color:#6b7280;">Questions? Reply to this email or contact us at <a href="mailto:info@greenmileboosters.com" style="color:#18532a;">info@greenmileboosters.com</a>.</p>
+      <p style="font-size:13px;color:#6b7280;">Questions? Reply to this email or contact us at <a href="mailto:info@greenmileboosters.org" style="color:#18532a;">info@greenmileboosters.org</a>.</p>
     `,
   })
 }
@@ -621,7 +621,7 @@ export function orderAdminAlertEmail({ order, items }) {
       <div class="section-label">Fulfillment</div>
       <div class="info-row"><span class="info-label">Method</span><span class="info-value">${order.fulfillment.toUpperCase()}</span></div>
       <div class="info-row"><span class="info-label">Payment</span><span class="info-value">${order.payment_method === 'stripe' ? '✅ Paid (Card)' : '⏳ Cash pending'}</span></div>
-      <a href="https://greenmileboosters.com/admin/store" class="btn">VIEW IN ADMIN</a>
+      <a href="https://greenmileboosters.org/admin/store" class="btn">VIEW IN ADMIN</a>
     `,
   })
 }
@@ -648,7 +648,7 @@ export function orderShippedEmail({ order, items, tracking }) {
       <div class="section-label">Items Shipped</div>
       ${orderItemsTable(items)}
       <div class="divider"></div>
-      <p style="font-size:13px;color:#6b7280;">Questions? <a href="mailto:info@greenmileboosters.com" style="color:#18532a;">info@greenmileboosters.com</a></p>
+      <p style="font-size:13px;color:#6b7280;">Questions? <a href="mailto:info@greenmileboosters.org" style="color:#18532a;">info@greenmileboosters.org</a></p>
     `,
   })
 }
@@ -688,7 +688,7 @@ export function orderRefundedEmail({ order }) {
       <p>Your refund of <strong>${fmtMoney(order.total_cents)}</strong> for order ${esc(order.order_number)} has been processed.
       ${order.payment_method === 'stripe' ? 'Please allow 5–10 business days for the credit to appear.' : 'Please contact us to arrange your cash refund.'}</p>
       <div class="divider"></div>
-      <p style="font-size:13px;color:#6b7280;"><a href="mailto:info@greenmileboosters.com" style="color:#18532a;">info@greenmileboosters.com</a></p>
+      <p style="font-size:13px;color:#6b7280;"><a href="mailto:info@greenmileboosters.org" style="color:#18532a;">info@greenmileboosters.org</a></p>
     `,
   })
 }

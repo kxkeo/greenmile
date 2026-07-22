@@ -179,7 +179,7 @@ function Footer() {
               <li><Link to="/volunteer" className="text-zinc-400 hover:text-field-400 transition">Volunteer</Link></li>
               <li><Link to="/donate" className="text-zinc-400 hover:text-field-400 transition">Donate</Link></li>
               <li><Link to="/my-account/signup" className="text-zinc-400 hover:text-field-400 transition">Become a member</Link></li>
-              <li><a href="mailto:info@greenmileboosters.com" className="text-zinc-400 hover:text-field-400 transition">Contact us</a></li>
+              <li><a href="mailto:info@greenmileboosters.org" className="text-zinc-400 hover:text-field-400 transition">Contact us</a></li>
             </ul>
           </div>
         </div>

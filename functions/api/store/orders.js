@@ -112,7 +112,7 @@ export async function onRequest({ request, env }) {
     html: orderConfirmationEmail({ order, items }),
   }).catch(() => {})
 
-  const adminEmail = env.ADMIN_EMAIL || 'info@greenmileboosters.com'
+  const adminEmail = env.ADMIN_EMAIL || 'info@greenmileboosters.org'
   sendEmail(env, {
     to: adminEmail,
     subject: `🛒 New Shop Order — ${orderNumber}`,

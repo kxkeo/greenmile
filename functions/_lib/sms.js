@@ -101,7 +101,7 @@ export async function sendSms(env, { to, body, purpose = 'other', participantId 
 // carrier filter triggers. Keep under 160 chars.
 export function pinSmsBody({ pin, newAccount = false }) {
   if (newAccount) {
-    return `The Green Mile Boosters: Your login PIN is ${pin}. Keep it safe. Sign in at greenmileboosters.com/my-account/login`
+    return `The Green Mile Boosters: Your login PIN is ${pin}. Keep it safe. Sign in at greenmileboosters.org/my-account/login`
   }
-  return `The Green Mile Boosters: Your new login PIN is ${pin}. Sign in at greenmileboosters.com/my-account/login`
+  return `The Green Mile Boosters: Your new login PIN is ${pin}. Sign in at greenmileboosters.org/my-account/login`
 }

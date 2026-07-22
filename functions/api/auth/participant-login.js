@@ -54,7 +54,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (participant.disabled) {
-      return json({ error: 'This account has been disabled. Contact info@greenmileboosters.com for help.' }, 403)
+      return json({ error: 'This account has been disabled. Contact info@greenmileboosters.org for help.' }, 403)
     }
 
     // Verify credential via PBKDF2 (or legacy SHA-256 with auto-upgrade on

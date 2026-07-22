@@ -40,7 +40,7 @@ export async function onRequestPost({ request, env }) {
   try {
     // Verify campaign exists and is active
     const campaign = await env.DB.prepare(
-      'SELECT id, type, title, status, price_cents FROM campaigns WHERE id = ?'
+      'SELECT id, type, title, status, price_cents, event_date, event_time, location, meta FROM campaigns WHERE id = ?'
     ).bind(campaignId).first()
 
     if (!campaign)               return json({ error: 'Campaign not found' }, 404)
@@ -48,6 +48,21 @@ export async function onRequestPost({ request, env }) {
 
     const qty   = Math.max(1, parseInt(ticketQty, 10) || 1)
     const total = campaign.price_cents ? campaign.price_cents * qty : 0
+
+    // Campaigns with meta.max_tickets (e.g. a 200-ticket raffle) are capped:
+    // count already-sold tickets and reject anything that would go over.
+    let campaignMeta = {}
+    try { campaignMeta = JSON.parse(campaign.meta || '{}') } catch {}
+    const maxTickets = parseInt(campaignMeta.max_tickets, 10) || 0
+    if (maxTickets > 0) {
+      const sold = await env.DB.prepare(
+        `SELECT COALESCE(SUM(ticket_qty), 0) AS n FROM event_registrations
+         WHERE campaign_id = ? AND payment_status != 'refunded'`
+      ).bind(campaignId).first()
+      const remaining = maxTickets - (sold?.n || 0)
+      if (remaining <= 0)  return json({ error: 'Sold out — all tickets have been claimed.' }, 400)
+      if (qty > remaining) return json({ error: `Only ${remaining} ticket${remaining === 1 ? '' : 's'} left.` }, 400)
+    }
 
     // Verify Stripe payment if card payment was used. Card payments are
     // grossed up to cover Stripe's 2.9% + $0.30 fee, so the PI amount will
@@ -108,7 +123,7 @@ export async function onRequestPost({ request, env }) {
         campaignTitle: campaign.title,
         campaignType:  campaign.type,
         eventDate:     campaign.event_date || null,
-        location:      null,
+        location:      campaign.location || null,
         ticketQty:     qty,
         shirtSize:     shirtSize || null,
         gradYear:      gradYear || null,

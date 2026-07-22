@@ -121,7 +121,7 @@ export async function onRequestPost({ request, env }) {
           const phoneCheck = await env.DB.prepare(
             'SELECT id FROM participants WHERE phone = ?'
           ).bind(phoneNorm).first()
-          if (phoneCheck) return json({ error: 'That phone number is already associated with a different account. Please use the email address for that account, or contact us at info@greenmileboosters.com for help.' }, 409)
+          if (phoneCheck) return json({ error: 'That phone number is already associated with a different account. Please use the email address for that account, or contact us at info@greenmileboosters.org for help.' }, 409)
         }
         // New — generate PIN
         plainPin = generatePin()

@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui'
 import { AuthShell } from './Login'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const rawNext = params.get('next') || ''
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/my-account/dashboard'
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', newsletter: true })
   const [error, setError] = useState('')
   const [pin, setPin] = useState('')
@@ -26,7 +29,7 @@ export default function Signup() {
       if (!res.ok) throw new Error(data.error || 'Signup failed')
       // Phone-only accounts get a PIN back — show it before redirecting.
       if (data.pin) { setPin(data.pin); return }
-      navigate('/my-account/dashboard')
+      navigate(next)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -79,7 +82,7 @@ export default function Signup() {
         <Button size="lg" className="w-full" disabled={busy}>{busy ? 'Creating account…' : 'Create Account'}</Button>
       </form>
       <p className="mt-6 text-center text-sm text-zinc-400">
-        Already a member? <Link to="/my-account/login" className="text-field-400 hover:text-field-300">Sign in</Link>
+        Already a member? <Link to={rawNext ? `/my-account/login?next=${encodeURIComponent(rawNext)}` : '/my-account/login'} className="text-field-400 hover:text-field-300">Sign in</Link>
       </p>
     </AuthShell>
   )

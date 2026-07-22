@@ -53,7 +53,11 @@ export default function Events() {
                     <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
                     {e.description && <p className="mt-2 text-sm text-zinc-400 leading-relaxed line-clamp-3">{e.description}</p>}
                     <div className="mt-5">
-                      <Button to="/my-account/signup" size="sm">Register →</Button>
+                      <Button
+                        to={String(e.meta?.slug || '').startsWith('country-nights') ? '/events/country-nights' : `/events/register/${e.id}`}
+                        size="sm">
+                        {e.price_cents ? 'Get Tickets →' : 'Register →'}
+                      </Button>
                     </div>
                   </div>
                 </div>

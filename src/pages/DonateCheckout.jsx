@@ -52,7 +52,7 @@ export default function DonateCheckout() {
             <div className="font-heading uppercase tracking-wide text-field-300 text-sm mb-1">Online giving is being connected</div>
             <p className="text-sm text-zinc-300 leading-relaxed">
               We're finishing our secure payment setup. To give right now, email{' '}
-              <a href="mailto:info@greenmileboosters.com" className="text-field-400 hover:text-field-300">info@greenmileboosters.com</a>{' '}
+              <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
               and we'll take care of you. Thank you for backing the Emperors!
             </p>
           </div>

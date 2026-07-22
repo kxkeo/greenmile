@@ -23,6 +23,6 @@ export async function onRequestPost({ request, env }) {
   })
 
   // Return public URL — requires SHOP_IMAGES_URL env var (set in CF Pages settings)
-  const base = env.SHOP_IMAGES_URL || 'https://images.greenmileboosters.com'
+  const base = env.SHOP_IMAGES_URL || 'https://images.greenmileboosters.org'
   return json({ url: `${base}/${key}` })
 }

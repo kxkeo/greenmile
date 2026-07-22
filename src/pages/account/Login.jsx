@@ -1,9 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui'
 
 export default function Login() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  // Only allow same-site relative redirects
+  const rawNext = params.get('next') || ''
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/my-account/dashboard'
   const [identifier, setIdentifier] = useState('')
   const [credential, setCredential] = useState('')
   const [error, setError] = useState('')
@@ -21,7 +25,7 @@ export default function Login() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Login failed')
-      navigate('/my-account/dashboard')
+      navigate(next)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -44,7 +48,7 @@ export default function Login() {
         <Button size="lg" className="w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</Button>
       </form>
       <p className="mt-6 text-center text-sm text-zinc-400">
-        New here? <Link to="/my-account/signup" className="text-field-400 hover:text-field-300">Create an account</Link>
+        New here? <Link to={rawNext ? `/my-account/signup?next=${encodeURIComponent(rawNext)}` : '/my-account/signup'} className="text-field-400 hover:text-field-300">Create an account</Link>
       </p>
     </AuthShell>
   )
