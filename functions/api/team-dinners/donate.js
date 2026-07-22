@@ -25,6 +25,19 @@ export async function onRequestPost({ request, env }) {
   const dinnerId = parseInt(body.dinnerId, 10)
   if (!dinnerId) return json({ error: 'Which dinner?' }, 400)
 
+  // Remove the parent's own donation for this dinner.
+  if (body.remove) {
+    try {
+      await env.DB.prepare(
+        'DELETE FROM team_dinner_donations WHERE dinner_id = ? AND participant_id = ?'
+      ).bind(dinnerId, participantId).run()
+      return json({ ok: true, removed: true })
+    } catch (e) {
+      console.error('[team-dinners/donate remove]', e?.message)
+      return json({ error: 'Could not remove your donation.' }, 500)
+    }
+  }
+
   const food     = body.food ? 1 : 0
   const drinks   = body.drinks ? 1 : 0
   const desserts = body.desserts ? 1 : 0

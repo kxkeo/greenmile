@@ -288,7 +288,9 @@ function DinnerRow({ dinner, onHost, onDonate }) {
         ) : (
           <Button onClick={onHost} size="sm" className="flex-1 sm:w-full !bg-white !text-field-700 hover:!bg-field-50">Host This Dinner</Button>
         )}
-        <Button onClick={onDonate} variant="outline" size="sm" className="flex-1 sm:w-full">Donate</Button>
+        <Button onClick={onDonate} variant="outline" size="sm" className="flex-1 sm:w-full">
+          {dinner.myDonation ? 'Edit Donation' : 'Donate'}
+        </Button>
       </div>
     </div>
   )
@@ -371,8 +373,14 @@ const DONATE_ITEMS = [
 ]
 
 function DonateModal({ dinner, onClose, onDonated }) {
-  const [picks, setPicks] = useState({ food: false, drinks: false, desserts: false })
-  const [notes, setNotes] = useState({ food: '', drinks: '', desserts: '' })
+  const existing = dinner.myDonation
+  const editing = !!existing
+  const [picks, setPicks] = useState({
+    food: existing?.food || false, drinks: existing?.drinks || false, desserts: existing?.desserts || false,
+  })
+  const [notes, setNotes] = useState({
+    food: existing?.foodNote || '', drinks: existing?.drinksNote || '', desserts: existing?.dessertsNote || '',
+  })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const toggle = k => setPicks(p => ({ ...p, [k]: !p[k] }))
@@ -404,13 +412,34 @@ function DonateModal({ dinner, onClose, onDonated }) {
     }
   }
 
+  const remove = async () => {
+    setError(''); setBusy(true)
+    try {
+      const res = await fetch('/api/team-dinners/donate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ dinnerId: dinner.id, remove: true }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not remove your donation.')
+      onDonated()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md card p-7 sm:p-8" onClick={e => e.stopPropagation()}>
-        <Eyebrow className="mb-2">Donate to This Dinner</Eyebrow>
+        <Eyebrow className="mb-2">{editing ? 'Edit Your Donation' : 'Donate to This Dinner'}</Eyebrow>
         <h2 className="display text-white text-3xl">vs {dinner.opponent}</h2>
         <p className="mt-1 text-sm text-zinc-400">Dinner {longDay(dinner.dinnerDate)}</p>
-        <p className="mt-4 text-sm text-zinc-400">Pick what you'll bring, then add what you're bringing.</p>
+        <p className="mt-4 text-sm text-zinc-400">
+          {editing ? 'Update what you\'re bringing, or remove your donation.' : 'Pick what you\'ll bring, then add what you\'re bringing.'}
+        </p>
 
         <form onSubmit={submit} className="mt-5 space-y-3">
           {DONATE_ITEMS.map(({ key, label, placeholder }) => {
@@ -438,8 +467,17 @@ function DonateModal({ dinner, onClose, onDonated }) {
 
           <div className="flex gap-3 pt-2">
             <Button type="button" onClick={onClose} variant="outline" size="md" className="flex-1">Cancel</Button>
-            <Button size="md" className="flex-1" disabled={busy}>{busy ? 'Saving…' : 'Confirm Donation'}</Button>
+            <Button size="md" className="flex-1" disabled={busy}>
+              {busy ? 'Saving…' : editing ? 'Save Changes' : 'Confirm Donation'}
+            </Button>
           </div>
+
+          {editing && (
+            <button type="button" onClick={remove} disabled={busy}
+              className="w-full text-center text-xs text-zinc-500 hover:text-red-300 transition pt-1">
+              Remove my donation
+            </button>
+          )}
         </form>
       </div>
     </div>
