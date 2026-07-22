@@ -43,8 +43,10 @@ const TIERS = [
 ]
 
 const CONTACTS = [
-  { name: 'Coach Lester', role: 'Head of Program', phone: '(559) 737-0804', tel: '5597370804' },
-  { name: 'Kevin Keo', role: 'Green Mile Booster Club', phone: '(559) 397-5555', tel: '5593975555' },
+  { name: 'Coach Lester', role: 'Head of Program', icon: '📞',
+    label: '(559) 737-0804', href: 'tel:5597370804' },
+  { name: 'Kevin Keo', role: 'Green Mile Booster Club', icon: '✉️',
+    label: 'info@greenmileboosters.org', href: 'mailto:info@greenmileboosters.org?subject=Sponsorship%20Inquiry' },
 ]
 
 export default function Sponsors() {
@@ -110,12 +112,12 @@ export default function Sponsors() {
           <SectionHeading eyebrow="Ready to join the team?" title="Talk to a Real Person" intro="Message any of our social pages, or call or text directly — we'll get your business on the Green Mile." />
           <div className="mt-10 grid gap-5 sm:grid-cols-2 max-w-2xl mx-auto">
             {CONTACTS.map(c => (
-              <a key={c.name} href={`tel:${c.tel}`} className="card-hover p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-field-500 to-field-800 grid place-items-center text-xl shrink-0">📞</div>
-                <div>
+              <a key={c.name} href={c.href} className="card-hover p-6 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-field-500 to-field-800 grid place-items-center text-xl shrink-0">{c.icon}</div>
+                <div className="min-w-0">
                   <div className="font-heading uppercase tracking-wide text-white">{c.name}</div>
                   <div className="text-xs text-zinc-500">{c.role}</div>
-                  <div className="text-sm text-field-400 mt-0.5">{c.phone}</div>
+                  <div className="text-sm text-field-400 mt-0.5 truncate">{c.label}</div>
                 </div>
               </a>
             ))}
