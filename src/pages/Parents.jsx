@@ -281,7 +281,7 @@ function DinnerRow({ dinner, onHost, onDonate }) {
       {/* Action */}
       <div className="shrink-0 flex sm:flex-col gap-2 sm:items-end">
         {booked ? (
-          <span className="inline-flex items-center justify-center font-heading uppercase tracking-wide text-xs text-field-400 border border-field-500/40 rounded-full px-4 py-2">
+          <span className="inline-flex items-center justify-center font-heading uppercase tracking-[0.12em] text-xs font-bold text-white bg-field-500 px-6 py-3">
             ✓ Booked
           </span>
         ) : (
