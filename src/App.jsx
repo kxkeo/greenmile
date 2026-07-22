@@ -23,6 +23,8 @@ import NotFound from './pages/NotFound'
 import Login from './pages/account/Login'
 import Signup from './pages/account/Signup'
 import Dashboard from './pages/account/Dashboard'
+import ForgotPassword from './pages/account/ForgotPassword'
+import ResetPassword from './pages/account/ResetPassword'
 
 // Admin
 import AdminLogin from './pages/admin/AdminLogin'
@@ -52,6 +54,8 @@ export default function App() {
             {/* Participant account */}
             <Route path="/my-account/login" element={<Login />} />
             <Route path="/my-account/signup" element={<Signup />} />
+            <Route path="/my-account/forgot" element={<ForgotPassword />} />
+            <Route path="/my-account/reset" element={<ResetPassword />} />
             <Route path="/my-account/dashboard" element={<Dashboard />} />
 
             {/* Admin */}

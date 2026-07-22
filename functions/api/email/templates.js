@@ -88,7 +88,7 @@ function wrap({ title, preheader = '', hero = '', body }) {
         <div class="header-eyebrow">&#127944; GREEN MILE BOOSTERS</div>
         <div class="header-title">The Green Mile Boosters</div>
         <div class="header-rule"></div>
-        <div class="header-sub">Supporting Emperors Baseball</div>
+        <div class="header-sub">Supporting Dinuba Emperors Football</div>
       </div>
       ${hero}
       <div class="body">
@@ -99,6 +99,7 @@ function wrap({ title, preheader = '', hero = '', body }) {
         <p><a href="https://greenmileboosters.org">greenmileboosters.org</a> &middot; <a href="mailto:info@greenmileboosters.org">info@greenmileboosters.org</a></p>
         <p style="margin-top:8px;color:#9ca3af;font-size:11px;">Please do not reply to this email. Contact us at info@greenmileboosters.org</p>
         <p style="color:#9ca3af;font-size:11px;">You are receiving this because you registered with The Green Mile Boosters.</p>
+        <p style="margin-top:8px;color:#9ca3af;font-size:11px;">The Green Mile Boosters is a registered 501(c)(3) nonprofit &middot; EIN 92-2360865<br/>Dinuba, California</p>
       </div>
     </div>
   </div>
@@ -109,7 +110,7 @@ function wrap({ title, preheader = '', hero = '', body }) {
 // ── PIN Delivery ───────────────────────────────────────────────────────────────
 export function pinEmail({ firstName, pin, eventType, isPassword }) {
   const eventLabel = eventType === 'golf'   ? 'Emperors Golf Tournament'
-    : eventType === 'camp'   ? 'Emperors Baseball Camp'
+    : eventType === 'camp'   ? 'Emperors Football Camp'
     : eventType === 'alumni' ? 'Alumni Game'
     : 'The Green Mile Boosters'
 
@@ -253,27 +254,27 @@ export function campConfirmationEmail({ parentFirst, parentLast, email, players,
 
   const hero = `
     <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:28px 28px 24px;text-align:center;">
-      <div style="font-size:44px;line-height:1;margin-bottom:10px;">⚾</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Emperors Baseball Camp</div>
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🏈</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Emperors Football Camp</div>
       ${dateLabel ? `<div style="display:inline-block;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 18px;">
         <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:rgba(255,255,255,0.8);letter-spacing:2px;text-transform:uppercase;">${dateLabel}</span>
       </div>` : ''}
     </div>`
 
   return {
-    subject: `Registration Confirmed — Emperors Baseball Camp`,
+    subject: `Registration Confirmed — Emperors Football Camp`,
     html: wrap({
-      title: 'Baseball Camp Registration Confirmed',
-      preheader: `Registration confirmed for Emperors Baseball Camp. We'll see you on the field!`,
+      title: 'Football Camp Registration Confirmed',
+      preheader: `Registration confirmed for Emperors Football Camp. We'll see you on the field!`,
       hero,
       body: `
-        <h1>You're In! ⚾</h1>
-        <p>Thanks, <strong>${esc(parentFirst)}</strong>! Your registration for <strong>Emperors Baseball Camp</strong> has been received. Get ready for a great day on the diamond.</p>
+        <h1>You're In! 🏈</h1>
+        <p>Thanks, <strong>${esc(parentFirst)}</strong>! Your registration for <strong>Emperors Football Camp</strong> has been received. Get ready for a great day on the Green Mile.</p>
 
         <p class="section-label">EVENT DETAILS</p>
         <div style="margin-bottom:20px;">
           ${dateLabel ? `<div class="info-row"><span class="info-label">Date:</span><span class="info-value">${dateLabel}</span></div>` : ''}
-          <div class="info-row"><span class="info-label">Location:</span><span class="info-value">DHS Baseball Field at Washington Intermediate School</span></div>
+          <div class="info-row"><span class="info-label">Location:</span><span class="info-value">Dinuba High School — The Green Mile</span></div>
           <div class="info-row"><span class="info-label">Payment:</span><span class="info-value">${payLabel}</span></div>
         </div>
 
@@ -317,7 +318,7 @@ export function taxReceiptEmail({ email, amount, donationDate }) {
       hero,
       body: `
         <h1>Thank You! 💚</h1>
-        <p>Thank you for your generous donation to The Green Mile Boosters. Your support keeps Emperors Baseball alive in our community.</p>
+        <p>Thank you for your generous donation to The Green Mile Boosters. Your support keeps Dinuba Emperors Football strong in our community.</p>
 
         ${amount ? `
         <div class="stat-box">
@@ -498,7 +499,7 @@ export function donationAckEmail({ firstName, lastName, amount, tierLabel, donat
     <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:28px 28px 24px;text-align:center;">
       <div style="font-size:44px;line-height:1;margin-bottom:10px;">💚</div>
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Thank You!</div>
-      <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;">Dinuba Emperors Baseball</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;">Dinuba Emperors Football</div>
     </div>`
 
   return {
@@ -509,7 +510,7 @@ export function donationAckEmail({ firstName, lastName, amount, tierLabel, donat
       hero,
       body: `
         <h1>Thank You, ${esc(firstName)}! 💚</h1>
-        <p>Your generous support means the world to our players and coaches. Donations like yours keep Emperors Baseball alive in the Dinuba community.</p>
+        <p>Your generous support means the world to our players and coaches. Donations like yours keep Dinuba Emperors Football strong under the Friday night lights.</p>
 
         ${amountStr ? `
         <div class="stat-box">
@@ -529,7 +530,7 @@ export function donationAckEmail({ firstName, lastName, amount, tierLabel, donat
 
         <div class="impact-bar">
           <p class="impact-bar-title">Your Impact</p>
-          <p>Every dollar you donate goes directly to Emperors Baseball — equipment, travel, and development for student-athletes right here in Dinuba. You're not just supporting a team, you're building a community.</p>
+          <p>Every dollar you donate goes directly to Emperors Football — equipment, travel, meals, and development for student-athletes right here in Dinuba. You're not just supporting a team, you're building a community.</p>
         </div>
 
         <div class="impact-bar" style="margin-top:0;">
@@ -691,4 +692,288 @@ export function orderRefundedEmail({ order }) {
       <p style="font-size:13px;color:#6b7280;"><a href="mailto:info@greenmileboosters.org" style="color:#18532a;">info@greenmileboosters.org</a></p>
     `,
   })
+}
+
+// ── Shared date helper ──────────────────────────────────────────────────────
+function longDate(d) {
+  if (!d) return null
+  try { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }) }
+  catch { return null }
+}
+function payLabelFor(status) {
+  return status === 'pay_at_event' ? 'Pay at Event'
+    : status === 'paid'   ? 'Paid'
+    : status === 'free'   ? 'Complimentary'
+    : status === 'waived' ? 'Waived'
+    : 'Pending'
+}
+
+// ── Country Nights — Dinner / Event Ticket Confirmation ─────────────────────
+// The Green Mile Boosters' signature tri-tip dinner & auction fundraiser.
+export function countryNightsEmail({ firstName, ticketQty, totalCents, paymentStatus, eventDate, location, doors, dinner, highlights }) {
+  const dateLabel = longDate(eventDate)
+  const payLabel  = payLabelFor(paymentStatus)
+  const isPAE     = paymentStatus === 'pay_at_event'
+  const total     = totalCents ? (totalCents / 100) : null
+  const qty       = Math.max(1, parseInt(ticketQty, 10) || 1)
+
+  const highlightRows = Array.isArray(highlights) && highlights.length
+    ? highlights.map(h => `<li style="margin:0 0 6px;padding-left:6px;">${esc(h)}</li>`).join('')
+    : ''
+
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:30px 28px 26px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🤠</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Country Nights</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;">On the Green Mile</div>
+      ${dateLabel ? `<div style="display:inline-block;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:5px 18px;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:rgba(255,255,255,0.85);letter-spacing:2px;text-transform:uppercase;">${dateLabel}</span>
+      </div>` : ''}
+    </div>`
+
+  return {
+    subject: `You're Going to Country Nights! 🤠`,
+    html: wrap({
+      title: 'Country Nights — Tickets Confirmed',
+      preheader: `Your Country Nights tickets are confirmed. See you on the Green Mile!`,
+      hero,
+      body: `
+        <h1>See You There, ${esc(firstName)}! 🤠</h1>
+        <p>Your ${qty > 1 ? `<strong>${qty} tickets</strong> are` : 'ticket is'} confirmed for <strong>Country Nights</strong> — a night of tri-tip, live music, and auctions, all to back Dinuba Emperors Football. Boots optional, big hearts required.</p>
+
+        ${total ? `
+        <div class="stat-box">
+          <p class="stat-box-label">${qty > 1 ? `${qty} Tickets` : 'Ticket'} · Total</p>
+          <p class="stat-box-value">$${total.toFixed(0)}</p>
+          <p class="stat-box-sub">${payLabel}</p>
+        </div>` : ''}
+
+        <p class="section-label">EVENT DETAILS</p>
+        <div style="margin-bottom:20px;">
+          ${dateLabel ? `<div class="info-row"><span class="info-label">Date:</span><span class="info-value">${dateLabel}</span></div>` : ''}
+          ${doors ? `<div class="info-row"><span class="info-label">Doors:</span><span class="info-value">${esc(doors)}</span></div>` : ''}
+          ${dinner ? `<div class="info-row"><span class="info-label">Dinner:</span><span class="info-value">${esc(dinner)}</span></div>` : ''}
+          ${location ? `<div class="info-row"><span class="info-label">Location:</span><span class="info-value">${esc(location)}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">Tickets:</span><span class="info-value">${qty}</span></div>
+          <div class="info-row"><span class="info-label">Payment:</span><span class="info-value">${payLabel}</span></div>
+        </div>
+
+        ${highlightRows ? `
+        <div class="impact-bar">
+          <p class="impact-bar-title">The Night Includes</p>
+          <ul style="margin:0;padding-left:18px;font-size:13px;color:#374151;line-height:1.65;">${highlightRows}</ul>
+        </div>` : ''}
+
+        ${isPAE ? `
+        <div class="notice">
+          <p><strong>Payment reminder:</strong> You selected Pay at Event. Please bring your payment the night of Country Nights. We accept cash and check.</p>
+        </div>` : ''}
+
+        <a href="https://greenmileboosters.org/my-account/registrations" class="btn">VIEW MY TICKETS</a>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
+      `
+    })
+  }
+}
+
+// ── Country Nights Raffle — Ticket Confirmation ─────────────────────────────
+export function raffleTicketEmail({ firstName, ticketQty, totalCents, paymentStatus, eventDate, location, prizes, needNotBePresent }) {
+  const dateLabel = longDate(eventDate)
+  const payLabel  = payLabelFor(paymentStatus)
+  const isPAE     = paymentStatus === 'pay_at_event'
+  const total     = totalCents ? (totalCents / 100) : null
+  const qty       = Math.max(1, parseInt(ticketQty, 10) || 1)
+
+  const prizeRows = Array.isArray(prizes) && prizes.length
+    ? prizes.map(p => `<div class="info-row"><span class="info-label">${esc(p.label)}:</span><span class="info-value">$${((parseInt(p.amount, 10) || 0) / 100).toLocaleString()}</span></div>`).join('')
+    : ''
+
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:30px 28px 26px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🎟️</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Country Nights Raffle</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:2.5px;text-transform:uppercase;">You're In the Draw</div>
+    </div>`
+
+  return {
+    subject: `You're In the Raffle! 🎟️ — Country Nights`,
+    html: wrap({
+      title: 'Country Nights Raffle — Entry Confirmed',
+      preheader: `Your Country Nights raffle ${qty > 1 ? 'tickets are' : 'ticket is'} confirmed. Good luck!`,
+      hero,
+      body: `
+        <h1>Good Luck, ${esc(firstName)}! 🍀</h1>
+        <p>You're officially entered in the <strong>Country Nights Raffle</strong>. ${qty > 1 ? `That's <strong>${qty} chances</strong>` : `That's <strong>1 entry</strong>`} to win — and every ticket helps send Dinuba Emperors Football onto the field.</p>
+
+        <div class="stat-box">
+          <p class="stat-box-label">${qty > 1 ? 'Raffle Tickets' : 'Raffle Ticket'}</p>
+          <p class="stat-box-value">${qty}</p>
+          ${total ? `<p class="stat-box-sub">$${total.toFixed(0)} · ${payLabel}</p>` : `<p class="stat-box-sub">${payLabel}</p>`}
+        </div>
+
+        ${prizeRows ? `
+        <p class="section-label">PRIZES</p>
+        <div style="margin-bottom:20px;">${prizeRows}</div>` : ''}
+
+        <p class="section-label">THE DRAWING</p>
+        <div style="margin-bottom:20px;">
+          ${dateLabel ? `<div class="info-row"><span class="info-label">Drawn:</span><span class="info-value">${dateLabel}</span></div>` : ''}
+          ${location ? `<div class="info-row"><span class="info-label">At:</span><span class="info-value">${esc(location)}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">Entries:</span><span class="info-value">${qty}</span></div>
+          <div class="info-row"><span class="info-label">Payment:</span><span class="info-value">${payLabel}</span></div>
+        </div>
+
+        <div class="impact-bar">
+          <p class="impact-bar-title">Good to Know</p>
+          <p>${needNotBePresent ? 'You do <strong>not</strong> need to be present to win — we\'ll reach out directly if your number is drawn.' : 'Winners are drawn the night of Country Nights.'} Winners are contacted at the email and phone on file.</p>
+        </div>
+
+        ${isPAE ? `
+        <div class="notice">
+          <p><strong>Payment reminder:</strong> You selected Pay at Event. Please bring your payment the night of Country Nights. We accept cash and check.</p>
+        </div>` : ''}
+
+        <a href="https://greenmileboosters.org/my-account/registrations" class="btn">VIEW MY ENTRIES</a>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">Questions? Email us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
+      `
+    })
+  }
+}
+
+// ── Account Welcome / Registration Email ────────────────────────────────────
+// Sent when someone creates an email+password account with The Green Mile Boosters.
+export function accountWelcomeEmail({ firstName, email }) {
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:28px 28px 24px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🏈</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Welcome to the Green Mile</div>
+    </div>`
+
+  return {
+    subject: `Welcome to The Green Mile Boosters`,
+    html: wrap({
+      title: 'Welcome to The Green Mile Boosters',
+      preheader: `Your account is ready. Welcome to the Green Mile family.`,
+      hero,
+      body: `
+        <h1>Welcome Aboard, ${esc(firstName)}! 🏈</h1>
+        <p>Your account with <strong>The Green Mile Boosters</strong> is all set up. You're now part of the crew backing Dinuba Emperors Football under the Friday night lights.</p>
+
+        <p>Sign in anytime with your email${email ? ` (<strong>${esc(email)}</strong>)` : ''} and the password you chose to:</p>
+
+        <div class="impact-bar">
+          <p class="impact-bar-title">Your Account</p>
+          <p>&#8226; View and manage your event registrations<br/>&#8226; Grab tickets and raffle entries for upcoming events<br/>&#8226; Keep your info current for receipts and reminders</p>
+        </div>
+
+        <a href="https://greenmileboosters.org/my-account/login" class="btn">SIGN IN TO MY ACCOUNT</a>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">If you did not create this account, contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
+      `
+    })
+  }
+}
+
+// ── Forgot Password / Reset Email ───────────────────────────────────────────
+export function passwordResetEmail({ firstName, resetUrl }) {
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:28px 28px 24px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🔒</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Reset Your Password</div>
+    </div>`
+
+  return {
+    subject: `Reset Your Password — The Green Mile Boosters`,
+    html: wrap({
+      title: 'Reset Your Password',
+      preheader: `Reset your The Green Mile Boosters password. This link expires in 1 hour.`,
+      hero,
+      body: `
+        <h1>Reset Your Password</h1>
+        <p>Hi ${firstName ? esc(firstName) : 'there'}, we received a request to reset the password for your <strong>The Green Mile Boosters</strong> account. Click the button below to choose a new one.</p>
+
+        <a href="${esc(resetUrl)}" class="btn">RESET MY PASSWORD</a>
+
+        <div class="notice">
+          <p>This link expires in <strong>1 hour</strong> and can only be used once. If the button doesn't work, copy and paste this link into your browser:<br/>
+          <a href="${esc(resetUrl)}" style="color:${BASE.green};word-break:break-all;">${esc(resetUrl)}</a></p>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">If you didn't ask to reset your password, you can safely ignore this email — your password won't change. For help, contact <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
+      `
+    })
+  }
+}
+
+// ── Receipt / Invoice Email ─────────────────────────────────────────────────
+// General-purpose payment receipt for any card charge (tickets, raffle,
+// donations, sponsorships). `lineItems` = [{ label, amountCents }].
+export function receiptEmail({ firstName, receiptNumber, description, lineItems, subtotalCents, feeCents, totalCents, paymentDate, last4, paymentMethod = 'card' }) {
+  const dateLabel = paymentDate
+    ? (() => { try { return new Date(paymentDate).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) } catch { return new Date(paymentDate).toDateString?.() || '' } })()
+    : ''
+
+  const items = Array.isArray(lineItems) && lineItems.length
+    ? lineItems
+    : (description ? [{ label: description, amountCents: subtotalCents ?? totalCents }] : [])
+
+  const itemRows = items.map(i =>
+    `<div class="info-row"><span class="info-label">${esc(i.label)}</span><span class="info-value">${fmtMoney(parseInt(i.amountCents, 10) || 0)}</span></div>`
+  ).join('')
+
+  const hero = `
+    <div style="background:#0f3d1e;padding:24px 28px;text-align:center;">
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:19px;font-weight:700;color:#fff;letter-spacing:2px;text-transform:uppercase;">Payment Receipt</div>
+      ${receiptNumber ? `<div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:2px;margin-top:5px;">${esc(receiptNumber)}</div>` : ''}
+    </div>`
+
+  return {
+    subject: `Your Receipt${receiptNumber ? ` — ${receiptNumber}` : ''} — The Green Mile Boosters`,
+    html: wrap({
+      title: 'Payment Receipt',
+      preheader: `Your receipt from The Green Mile Boosters${totalCents ? ` for ${fmtMoney(totalCents)}` : ''}.`,
+      hero,
+      body: `
+        <h1>Thanks, ${esc(firstName || 'friend')}!</h1>
+        <p>Here's your receipt from <strong>The Green Mile Boosters</strong>. Please keep this email for your records.</p>
+
+        ${totalCents ? `
+        <div class="stat-box">
+          <p class="stat-box-label">Amount Paid</p>
+          <p class="stat-box-value">${fmtMoney(totalCents)}</p>
+          <p class="stat-box-sub">${dateLabel}${last4 ? ` · Card ending ${esc(String(last4))}` : ''}</p>
+        </div>` : ''}
+
+        <p class="section-label">RECEIPT</p>
+        <div style="margin-bottom:8px;">
+          ${itemRows}
+          ${feeCents ? `<div class="info-row"><span class="info-label">Processing Fee</span><span class="info-value">${fmtMoney(feeCents)}</span></div>` : ''}
+        </div>
+        <div class="divider"></div>
+        <div class="info-row"><span class="info-label" style="font-weight:700;color:#111827;">Total Paid</span><span class="info-value" style="font-weight:700;color:${BASE.green};">${fmtMoney(totalCents || 0)}</span></div>
+
+        <p class="section-label" style="margin-top:22px;">DETAILS</p>
+        <div style="margin-bottom:20px;">
+          ${receiptNumber ? `<div class="info-row"><span class="info-label">Receipt #:</span><span class="info-value">${esc(receiptNumber)}</span></div>` : ''}
+          ${dateLabel ? `<div class="info-row"><span class="info-label">Date:</span><span class="info-value">${dateLabel}</span></div>` : ''}
+          <div class="info-row"><span class="info-label">Method:</span><span class="info-value">${paymentMethod === 'card' ? `Card${last4 ? ` ending ${esc(String(last4))}` : ''}` : esc(String(paymentMethod))}</span></div>
+          <div class="info-row"><span class="info-label">Paid To:</span><span class="info-value">The Green Mile Boosters</span></div>
+        </div>
+
+        <div class="impact-bar">
+          <p class="impact-bar-title">Tax Information</p>
+          <p>The Green Mile Boosters is a registered 501(c)(3) nonprofit (EIN 92-2360865). Please retain this receipt for your records.</p>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size:13px;color:${BASE.gray};">Questions about this charge? Contact us at <a href="mailto:info@greenmileboosters.org" style="color:${BASE.green};">info@greenmileboosters.org</a>.</p>
+      `
+    })
+  }
 }

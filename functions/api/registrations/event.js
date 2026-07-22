@@ -1,6 +1,6 @@
 // POST /api/registrations/event
 import { sendEmail } from '../email/send.js'
-import { eventConfirmationEmail } from '../email/templates.js'
+import { eventConfirmationEmail, countryNightsEmail, raffleTicketEmail } from '../email/templates.js'
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
 import { piAlreadyUsed } from '../../_lib/paymentGuard.js'
 import { getStripeSecretKey } from '../../_lib/stripeKey.js'
@@ -117,26 +117,58 @@ export async function onRequestPost({ request, env }) {
       referredPlayerId ? parseInt(referredPlayerId, 10) : null
     ).run()
 
-    // Send confirmation email if email provided
+    // Send confirmation email if email provided. Country Nights (kind:'ticket')
+    // and the raffle (kind:'raffle') get dedicated templates; everything else
+    // falls back to the generic event confirmation.
     const emailTo = email?.trim().toLowerCase()
     if (emailTo) {
-      const tpl = eventConfirmationEmail({
-        firstName:     firstName.trim(),
-        campaignTitle: campaign.title,
-        campaignType:  campaign.type,
-        eventDate:     campaign.event_date || null,
-        location:      campaign.location || null,
-        ticketQty:     qty,
-        shirtSize:     shirtSize || null,
-        gradYear:      gradYear || null,
-        positions:     positions || null,
-        totalCents:    total,
-        paymentStatus,
-      })
+      const kind = campaignMeta.kind
+      let tpl, emailType
+      if (kind === 'raffle') {
+        tpl = raffleTicketEmail({
+          firstName:        firstName.trim(),
+          ticketQty:        qty,
+          totalCents:       total,
+          paymentStatus,
+          eventDate:        campaign.event_date || null,
+          location:         campaign.location || null,
+          prizes:           campaignMeta.prizes || null,
+          needNotBePresent: campaignMeta.need_not_be_present === true,
+        })
+        emailType = 'raffle_confirmation'
+      } else if (kind === 'ticket' && campaignMeta.slug === 'country-nights') {
+        tpl = countryNightsEmail({
+          firstName:     firstName.trim(),
+          ticketQty:     qty,
+          totalCents:    total,
+          paymentStatus,
+          eventDate:     campaign.event_date || null,
+          location:      campaign.location || null,
+          doors:         campaignMeta.doors || null,
+          dinner:        campaignMeta.dinner || null,
+          highlights:    campaignMeta.highlights || null,
+        })
+        emailType = 'country_nights_confirmation'
+      } else {
+        tpl = eventConfirmationEmail({
+          firstName:     firstName.trim(),
+          campaignTitle: campaign.title,
+          campaignType:  campaign.type,
+          eventDate:     campaign.event_date || null,
+          location:      campaign.location || null,
+          ticketQty:     qty,
+          shirtSize:     shirtSize || null,
+          gradYear:      gradYear || null,
+          positions:     positions || null,
+          totalCents:    total,
+          paymentStatus,
+        })
+        emailType = 'event_confirmation'
+      }
       await sendEmail(env, { to: emailTo, ...tpl }).catch(() => {})
       await env.DB.prepare(
-        `INSERT INTO email_log (participant_id, to_email, email_type, subject, status) VALUES (?, ?, 'event_confirmation', ?, 'sent')`
-      ).bind(participantId, emailTo, tpl.subject).run().catch(() => {})
+        `INSERT INTO email_log (participant_id, to_email, email_type, subject, status) VALUES (?, ?, ?, ?, 'sent')`
+      ).bind(participantId, emailTo, emailType, tpl.subject).run().catch(() => {})
     }
 
     return json({ ok: true, campaignTitle: campaign.title })

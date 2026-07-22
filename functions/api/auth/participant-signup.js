@@ -3,7 +3,7 @@
 // Phone only     → generates 6-digit PIN, returned in response
 
 import { sendEmail } from '../email/send.js'
-import { pinEmail } from '../email/templates.js'
+import { accountWelcomeEmail } from '../email/templates.js'
 import { hashCredential } from '../../_lib/password.js'
 
 function json(data, status = 200) {
@@ -97,12 +97,16 @@ export async function onRequestPost({ request, env }) {
       newsletterOptIn,
     ).first()
 
-    // Send PIN email for email accounts (confirmation, no PIN since they set a password)
+    // Email accounts get a branded welcome/registration email; phone-only
+    // accounts get their PIN so they can log in.
     if (emailClean) {
       try {
-        const tpl = pinEmail({ firstName: firstName.trim(), pin: null, eventType: 'account', isPassword: true })
+        const tpl = accountWelcomeEmail({ firstName: firstName.trim(), email: emailClean })
         await sendEmail(env, { to: emailClean, ...tpl })
       } catch (e) { console.error('Email send failed:', e) }
+    } else if (phoneClean) {
+      // Phone-only accounts have no email address to send the PIN to; the PIN
+      // is returned in the response body and shown to the user on screen.
     }
 
     // Session

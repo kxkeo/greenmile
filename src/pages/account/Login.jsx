@@ -42,7 +42,10 @@ export default function Login() {
           <input className="input" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="you@email.com" autoComplete="username" />
         </div>
         <div>
-          <label className="label">Password or PIN</label>
+          <div className="flex items-baseline justify-between">
+            <label className="label">Password or PIN</label>
+            <Link to="/my-account/forgot" className="text-xs text-field-400 hover:text-field-300">Forgot password?</Link>
+          </div>
           <input className="input" type="password" value={credential} onChange={e => setCredential(e.target.value)} placeholder="••••••" autoComplete="current-password" />
         </div>
         <Button size="lg" className="w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</Button>
