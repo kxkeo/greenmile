@@ -92,8 +92,16 @@ export default function AdminDashboard() {
   )
 }
 
+const SETTINGS_TABS = [
+  { key: 'payments', label: 'Payments' },
+  { key: 'email',    label: 'Email' },
+  { key: 'security', label: 'Security' },
+]
+
 function SettingsPanel() {
+  const [tab, setTab] = useState('payments')
   const [config, setConfig] = useState(null)
+  const [stripeKey, setStripeKey] = useState('')
   const [resendKey, setResendKey] = useState('')
   const [testTo, setTestTo] = useState('')
   const [newPw, setNewPw] = useState('')
@@ -130,8 +138,14 @@ function SettingsPanel() {
     }
   }
 
-  const saveKey = async () => {
+  const saveStripe = async () => {
+    if (await post('set_stripe_key', stripeKey.trim(), 'stripe', 'Stripe secret key saved — card payments are live.')) setStripeKey('')
+  }
+  const saveResend = async () => {
     if (await post('set_resend_key', resendKey.trim(), 'key', 'Resend API key saved — email receipts are live.')) setResendKey('')
+  }
+  const savePw = async () => {
+    if (await post('set_admin_password', newPw, 'pw', 'Admin password updated — use it on your next sign-in.')) setNewPw('')
   }
 
   const sendTest = async () => {
@@ -153,68 +167,119 @@ function SettingsPanel() {
     }
   }
 
-  const savePw = async () => {
-    if (await post('set_admin_password', newPw, 'pw', 'Admin password updated — use it on your next sign-in.')) setNewPw('')
-  }
-
   return (
-    <div className="mt-10 card p-6">
-      <div className="font-heading uppercase tracking-wide text-white mb-1">Settings</div>
-      <p className="text-xs text-zinc-500 mb-5">Email receipts and admin access.</p>
+    <div className="mt-10 card overflow-hidden">
+      <div className="px-6 pt-6">
+        <div className="font-heading uppercase tracking-wide text-white mb-1">Settings</div>
+        <p className="text-xs text-zinc-500">Payments, email receipts, and admin access.</p>
+      </div>
 
-      {msg && (
-        <div className={`mb-5 rounded-lg text-sm px-4 py-3 border ${msg.ok
-          ? 'bg-field-900/40 border-field-500/30 text-field-300'
-          : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>
-          {msg.text}
-        </div>
-      )}
+      {/* Sub-nav */}
+      <div className="mt-5 px-6 flex gap-1 border-b border-white/[0.07]">
+        {SETTINGS_TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => { setTab(t.key); setMsg(null) }}
+            className={`px-4 py-3 font-heading uppercase tracking-wider text-xs border-b-2 -mb-px transition-colors ${
+              tab === t.key
+                ? 'text-field-400 border-field-500'
+                : 'text-zinc-400 border-transparent hover:text-white'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Resend key */}
-        <div>
-          <label className="label">Resend API key (email receipts)</label>
-          <div className="text-xs mb-2">
-            {config === null ? <span className="text-zinc-600">Checking…</span>
-              : config?.resend_configured
-                ? <span className="text-field-400">✓ Configured {config.resend_key_hint}{config.resend_from_env ? ' (set via environment variable)' : ''}</span>
-                : <span className="text-amber-400">Not configured — receipts will not send</span>}
+      <div className="p-6">
+        {msg && (
+          <div className={`mb-5 rounded-lg text-sm px-4 py-3 border ${msg.ok
+            ? 'bg-field-900/40 border-field-500/30 text-field-300'
+            : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>
+            {msg.text}
           </div>
-          <div className="flex gap-2">
-            <input className="input" type="password" placeholder="re_…" value={resendKey}
-                   onChange={e => setResendKey(e.target.value)} autoComplete="off" />
-            <Button size="md" onClick={saveKey} disabled={busy === 'key' || !resendKey.trim()}>
-              {busy === 'key' ? 'Saving…' : 'Save'}
-            </Button>
-          </div>
-          {config?.resend_from_env && (
-            <p className="mt-2 text-xs text-zinc-600">The environment variable takes priority over a key saved here.</p>
-          )}
-          <div className="mt-4">
-            <label className="label">Send a test receipt to</label>
+        )}
+
+        {/* PAYMENTS — Stripe */}
+        {tab === 'payments' && (
+          <div className="max-w-xl">
+            <label className="label">Stripe secret key (card payments)</label>
+            <div className="text-xs mb-2">
+              {config === null ? <span className="text-zinc-600">Checking…</span>
+                : config?.stripe_configured
+                  ? <span className="text-field-400">✓ Configured {config.stripe_key_hint}
+                      {config.stripe_mode && <span className={config.stripe_mode === 'live' ? 'text-field-300' : 'text-amber-400'}> · {config.stripe_mode.toUpperCase()} mode</span>}
+                      {config.stripe_from_env ? ' (set via environment variable)' : ''}</span>
+                  : <span className="text-amber-400">Not configured — checkouts show "being connected"</span>}
+            </div>
             <div className="flex gap-2">
-              <input className="input" type="email" placeholder="you@email.com" value={testTo}
-                     onChange={e => setTestTo(e.target.value)} />
-              <Button size="md" variant="outline" onClick={sendTest}
-                      disabled={busy === 'test' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo.trim())}>
-                {busy === 'test' ? 'Sending…' : 'Test'}
+              <input className="input" type="password" placeholder="sk_live_… or sk_test_…" value={stripeKey}
+                     onChange={e => setStripeKey(e.target.value)} autoComplete="off" />
+              <Button size="md" onClick={saveStripe} disabled={busy === 'stripe' || !stripeKey.trim()}>
+                {busy === 'stripe' ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+            {config?.stripe_from_env && (
+              <p className="mt-2 text-xs text-zinc-600">The environment variable takes priority over a key saved here.</p>
+            )}
+            <div className="mt-5 rounded-lg bg-charcoal-900 border border-white/[0.07] p-4 text-xs text-zinc-400 leading-relaxed">
+              <div className="font-heading uppercase tracking-wider text-zinc-300 text-[0.7rem] mb-1.5">One more step</div>
+              The matching <span className="text-zinc-200">publishable key</span> (<code className="text-field-400">pk_live_…</code>) is
+              built into the site, so it must be added in Cloudflare Pages → Settings → Variables as
+              <span className="text-zinc-200"> VITE_STRIPE_PUBLISHABLE_KEY</span>, then redeploy. This key here powers charges,
+              refunds, and receipts server-side.
+            </div>
+          </div>
+        )}
+
+        {/* EMAIL — Resend */}
+        {tab === 'email' && (
+          <div className="max-w-xl">
+            <label className="label">Resend API key (email receipts)</label>
+            <div className="text-xs mb-2">
+              {config === null ? <span className="text-zinc-600">Checking…</span>
+                : config?.resend_configured
+                  ? <span className="text-field-400">✓ Configured {config.resend_key_hint}{config.resend_from_env ? ' (set via environment variable)' : ''}</span>
+                  : <span className="text-amber-400">Not configured — receipts will not send</span>}
+            </div>
+            <div className="flex gap-2">
+              <input className="input" type="password" placeholder="re_…" value={resendKey}
+                     onChange={e => setResendKey(e.target.value)} autoComplete="off" />
+              <Button size="md" onClick={saveResend} disabled={busy === 'key' || !resendKey.trim()}>
+                {busy === 'key' ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+            {config?.resend_from_env && (
+              <p className="mt-2 text-xs text-zinc-600">The environment variable takes priority over a key saved here.</p>
+            )}
+            <div className="mt-5">
+              <label className="label">Send a test receipt to</label>
+              <div className="flex gap-2">
+                <input className="input" type="email" placeholder="you@email.com" value={testTo}
+                       onChange={e => setTestTo(e.target.value)} />
+                <Button size="md" variant="outline" onClick={sendTest}
+                        disabled={busy === 'test' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo.trim())}>
+                  {busy === 'test' ? 'Sending…' : 'Test'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SECURITY — admin password */}
+        {tab === 'security' && (
+          <div className="max-w-xl">
+            <label className="label">Change admin password</label>
+            <p className="text-xs text-zinc-600 mb-2">For the built-in <span className="text-zinc-400">admin</span> login. Minimum 8 characters.</p>
+            <div className="flex gap-2">
+              <input className="input" type="password" placeholder="New password" value={newPw}
+                     onChange={e => setNewPw(e.target.value)} autoComplete="new-password" />
+              <Button size="md" onClick={savePw} disabled={busy === 'pw' || newPw.length < 8}>
+                {busy === 'pw' ? 'Saving…' : 'Update'}
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Admin password */}
-        <div>
-          <label className="label">Change admin password</label>
-          <p className="text-xs text-zinc-600 mb-2">For the built-in <span className="text-zinc-400">admin</span> login. Minimum 8 characters.</p>
-          <div className="flex gap-2">
-            <input className="input" type="password" placeholder="New password" value={newPw}
-                   onChange={e => setNewPw(e.target.value)} autoComplete="new-password" />
-            <Button size="md" onClick={savePw} disabled={busy === 'pw' || newPw.length < 8}>
-              {busy === 'pw' ? 'Saving…' : 'Update'}
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

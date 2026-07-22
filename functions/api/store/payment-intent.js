@@ -1,6 +1,9 @@
 // POST /api/store/payment-intent — create Stripe PaymentIntent
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
+
 export async function onRequestPost({ request, env }) {
-  if (!env.STRIPE_SECRET_KEY) {
+  const stripeKey = await getStripeSecretKey(env)
+  if (!stripeKey) {
     return Response.json({ error: 'Stripe not configured' }, { status: 503 })
   }
   const { amount_cents } = await request.json()
@@ -11,7 +14,7 @@ export async function onRequestPost({ request, env }) {
   const resp = await fetch('https://api.stripe.com/v1/payment_intents', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Authorization': `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({

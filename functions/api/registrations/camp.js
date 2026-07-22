@@ -3,6 +3,7 @@
 // Price per child taken from active camp campaign.
 // Admin can pass existingParticipantId or explicitCampaignId.
 
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
 import { sendEmail } from '../email/send.js'
 import { pinEmail, campConfirmationEmail } from '../email/templates.js'
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
@@ -137,12 +138,13 @@ export async function onRequestPost({ request, env }) {
     let verifiedCardPayment = false
     if (!allowSkip && !payAtCamp && baseTotalCents > 0) {
       if (!paymentIntentId) return json({ error: 'Missing payment info' }, 400)
-      if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 503)
+      const stripeKey = await getStripeSecretKey(env)
+      if (!stripeKey) return json({ error: 'Stripe not configured' }, 503)
       if (await piAlreadyUsed(env, paymentIntentId)) {
         return json({ error: 'This payment has already been recorded.' }, 409)
       }
       const piResp = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
-        headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+        headers: { 'Authorization': `Bearer ${stripeKey}` },
       })
       const pi = await piResp.json()
       if (pi.status !== 'succeeded') return json({ error: 'Payment not confirmed' }, 400)

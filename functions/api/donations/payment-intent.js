@@ -5,13 +5,15 @@
 // before recording the row.
 
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
 
 function json(d, s = 200) {
   return new Response(JSON.stringify(d), { status: s, headers: { 'Content-Type': 'application/json' } })
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Payment processing not configured' }, 503)
+  const stripeKey = await getStripeSecretKey(env)
+  if (!stripeKey) return json({ error: 'Payment processing not configured' }, 503)
 
   let body
   try { body = await request.json() } catch { return json({ error: 'Invalid JSON' }, 400) }
@@ -40,7 +42,7 @@ export async function onRequestPost({ request, env }) {
     const res = await fetch('https://api.stripe.com/v1/payment_intents', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Authorization': `Bearer ${stripeKey}`,
         'Content-Type':  'application/x-www-form-urlencoded',
       },
       body: params.toString(),

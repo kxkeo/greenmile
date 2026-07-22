@@ -4,6 +4,7 @@ import { sendEmail } from './email/send.js'
 import { donationAckEmail } from './email/templates.js'
 import { grossUpForStripe } from '../_lib/stripeFee.js'
 import { piAlreadyUsed } from '../_lib/paymentGuard.js'
+import { getStripeSecretKey } from '../_lib/stripeKey.js'
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -77,13 +78,14 @@ export async function onRequestPost({ request, env }) {
   const allowSkip = body.skipPaymentCheck === true && env.ALLOW_SKIP_PAYMENT === 'true'
   if (!allowSkip && amountCents > 0) {
     if (!paymentIntentId) return json({ error: 'Missing payment info' }, 400)
-    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500)
+    const stripeKey = await getStripeSecretKey(env)
+    if (!stripeKey) return json({ error: 'Stripe not configured' }, 500)
     if (await piAlreadyUsed(env, paymentIntentId)) {
       return json({ error: 'This payment has already been recorded.' }, 409)
     }
     try {
       const piResp = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
-        headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+        headers: { 'Authorization': `Bearer ${stripeKey}` },
       })
       const pi = await piResp.json()
       if (!piResp.ok || pi.error) {

@@ -11,13 +11,21 @@ export async function onRequestGet({ env }) {
   const geoBlock    = await env.SESSIONS.get('config:geo_block')
   const allowedIPs  = await env.SESSIONS.get('config:geo_allow_ips')
   const resendKey   = env.RESEND_API_KEY || await env.SESSIONS.get('config:resend_api_key')
+  const stripeKey   = env.STRIPE_SECRET_KEY || await env.SESSIONS.get('config:stripe_secret_key')
+  // The publishable key is baked into the frontend at build time, so we can
+  // only report whether the build was compiled with one.
+  const stripePub   = env.VITE_STRIPE_PUBLISHABLE_KEY || ''
   return json({
     geo_block:       geoBlock    === 'true',
     geo_allow_ips:   allowedIPs  ? allowedIPs.split(',').map(s => s.trim()).filter(Boolean) : [],
-    // Never echo the key itself — just enough to show it's configured.
+    // Never echo secrets — just enough to show they're configured.
     resend_configured: Boolean(resendKey),
     resend_key_hint:   resendKey ? `••••${String(resendKey).slice(-4)}` : null,
     resend_from_env:   Boolean(env.RESEND_API_KEY),
+    stripe_configured: Boolean(stripeKey),
+    stripe_key_hint:   stripeKey ? `${String(stripeKey).slice(0, 7)}…${String(stripeKey).slice(-4)}` : null,
+    stripe_from_env:   Boolean(env.STRIPE_SECRET_KEY),
+    stripe_mode:       stripeKey ? (String(stripeKey).startsWith('sk_live') ? 'live' : 'test') : null,
   })
 }
 
@@ -49,6 +57,19 @@ export async function onRequestPost({ request, env }) {
     }
     await env.SESSIONS.put('config:resend_api_key', key)
     return json({ ok: true, resend_configured: true, resend_key_hint: `••••${key.slice(-4)}` })
+  }
+
+  if (action === 'set_stripe_key') {
+    const key = String(value || '').trim()
+    if (!key) {
+      await env.SESSIONS.delete('config:stripe_secret_key')
+      return json({ ok: true, stripe_configured: Boolean(env.STRIPE_SECRET_KEY) })
+    }
+    if (!/^sk_(live|test)_[A-Za-z0-9]{10,}$/.test(key)) {
+      return json({ error: 'That does not look like a Stripe secret key (they start with sk_live_ or sk_test_).' }, 400)
+    }
+    await env.SESSIONS.put('config:stripe_secret_key', key)
+    return json({ ok: true, stripe_configured: true, stripe_key_hint: `${key.slice(0, 7)}…${key.slice(-4)}`, stripe_mode: key.startsWith('sk_live') ? 'live' : 'test' })
   }
 
   if (action === 'set_admin_password') {

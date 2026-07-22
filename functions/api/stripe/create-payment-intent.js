@@ -1,7 +1,9 @@
 // POST /api/stripe/create-payment-intent
 // Creates a Stripe Customer (if we have payer info) and a PaymentIntent
 // linked to that Customer. Returns the client secret.
-// Requires: STRIPE_SECRET_KEY env var set in Cloudflare dashboard.
+// Requires a Stripe secret key — either the STRIPE_SECRET_KEY env var or the
+// key saved in admin Settings → Payments (resolved via getStripeSecretKey).
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -12,7 +14,7 @@ function json(data, status = 200) {
 // Find an existing Stripe Customer by email, or create a new one.
 // Uses Stripe's search API so we don't churn out duplicate customers
 // for repeat payers (same participant registering for multiple events).
-async function getOrCreateCustomer(env, customer) {
+async function getOrCreateCustomer(env, customer, stripeKey) {
   if (!customer) return null
   const email = (customer.email || '').trim().toLowerCase()
   const name  = (customer.name  || '').trim()
@@ -23,7 +25,7 @@ async function getOrCreateCustomer(env, customer) {
     try {
       const searchUrl = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(`email:"${email}"`)}`
       const r = await fetch(searchUrl, {
-        headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+        headers: { 'Authorization': `Bearer ${stripeKey}` },
       })
       const s = await r.json()
       if (r.ok && s.data?.length > 0) {
@@ -40,7 +42,7 @@ async function getOrCreateCustomer(env, customer) {
           await fetch(`https://api.stripe.com/v1/customers/${id}`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+              'Authorization': `Bearer ${stripeKey}`,
               'Content-Type':  'application/x-www-form-urlencoded',
             },
             body: upd.toString(),
@@ -65,7 +67,7 @@ async function getOrCreateCustomer(env, customer) {
   const r = await fetch('https://api.stripe.com/v1/customers', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Authorization': `Bearer ${stripeKey}`,
       'Content-Type':  'application/x-www-form-urlencoded',
     },
     body: p.toString(),
@@ -96,11 +98,12 @@ export async function onRequestPost({ request, env }) {
   } = body
 
   if (!amountCents || amountCents < 50) return json({ error: 'Invalid amount' }, 400)
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500)
+  const stripeKey = await getStripeSecretKey(env)
+  if (!stripeKey) return json({ error: 'Stripe not configured' }, 500)
 
   try {
     // Create or reuse Stripe Customer so the dashboard "Customer" column is populated
-    const customerId = await getOrCreateCustomer(env, customer)
+    const customerId = await getOrCreateCustomer(env, customer, stripeKey)
 
     const params = new URLSearchParams({
       amount:   String(Math.round(amountCents)),
@@ -133,7 +136,7 @@ export async function onRequestPost({ request, env }) {
     const res = await fetch('https://api.stripe.com/v1/payment_intents', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Authorization': `Bearer ${stripeKey}`,
         'Content-Type':  'application/x-www-form-urlencoded',
       },
       body: params.toString(),

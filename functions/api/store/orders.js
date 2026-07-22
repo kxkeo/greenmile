@@ -3,6 +3,7 @@
 import { sendEmail } from '../email/send.js'
 import { orderConfirmationEmail, orderAdminAlertEmail } from '../email/templates.js'
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
 import { piAlreadyUsed } from '../../_lib/paymentGuard.js'
 
 function json(d, s = 200) {
@@ -59,12 +60,13 @@ export async function onRequest({ request, env }) {
   // normally be greater than subtotal+shipping. Accept either the grossed-up or raw total.
   if (payment_method === 'stripe') {
     if (!stripe_payment_intent) return json({ error: 'Missing payment info' }, 400)
-    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 503)
+    const stripeKey = await getStripeSecretKey(env)
+    if (!stripeKey) return json({ error: 'Stripe not configured' }, 503)
     if (await piAlreadyUsed(env, stripe_payment_intent)) {
       return json({ error: 'This payment has already been recorded.' }, 409)
     }
     const piResp = await fetch(`https://api.stripe.com/v1/payment_intents/${stripe_payment_intent}`, {
-      headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+      headers: { 'Authorization': `Bearer ${stripeKey}` },
     })
     const pi = await piResp.json()
     if (pi.status !== 'succeeded') return json({ error: 'Payment not confirmed' }, 400)

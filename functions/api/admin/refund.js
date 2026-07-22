@@ -7,6 +7,8 @@
 // Body: { kind: 'event'|'camp'|'golf'|'donation', id: <row id> }
 // Returns: { ok, refundId, amountCents } or { error } with a clear message.
 
+import { getStripeSecretKey } from '../../_lib/stripeKey.js'
+
 const TABLES = {
   event:    { table: 'event_registrations', piCol: 'stripe_session' },
   camp:     { table: 'camp_registrations',  piCol: 'stripe_session' },
@@ -35,7 +37,8 @@ export async function onRequestPost({ request, env }) {
   const rowId = parseInt(id, 10)
   if (!rowId) return json({ error: 'Invalid id' }, 400)
 
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500)
+  const stripeKey = await getStripeSecretKey(env)
+  if (!stripeKey) return json({ error: 'Stripe not configured' }, 500)
 
   const { table, piCol } = TABLES[kind]
 
@@ -66,7 +69,7 @@ export async function onRequestPost({ request, env }) {
     const resp = await fetch('https://api.stripe.com/v1/refunds', {
       method: 'POST',
       headers: {
-        'Authorization':   `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Authorization':   `Bearer ${stripeKey}`,
         'Content-Type':    'application/x-www-form-urlencoded',
         'Idempotency-Key': `refund-${kind}-${rowId}`,
       },

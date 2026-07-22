@@ -1,20 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
-import { loadStripe } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Button, Eyebrow, Loading } from '../components/ui'
+import StripeCheckout, { STRIPE_READY, fmtUSD as fmt } from '../components/StripeCheckout'
 
 // Generic paid-event checkout: /events/register/:id
 // Works for any active campaign (Country Nights dinner, raffle, alumni, …).
 // Requires a participant account — the registration + receipt APIs are tied to
 // one. Card payment via Stripe when keys are configured; "pay at the door"
 // otherwise (raffles always require card/online payment once Stripe is live).
-
-const PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
-const STRIPE_READY = PK && !PK.includes('placeholder')
-const stripePromise = STRIPE_READY ? loadStripe(PK) : null
-
-const fmt = c => `$${(c / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}`
 
 export default function EventCheckout() {
   const { id } = useParams()
@@ -183,16 +176,27 @@ function CheckoutForm({ campaign, me }) {
         {/* Payment */}
         {STRIPE_READY ? (
           <>
-            <div className="flex gap-3">
-              <PayToggle active={!payAtEvent} onClick={() => setPayAtEvent(false)}>💳 Pay by Card</PayToggle>
-              {!isRaffle && <PayToggle active={payAtEvent} onClick={() => setPayAtEvent(true)}>🎟️ Pay at the Door</PayToggle>}
+            <div className="grid grid-cols-2 gap-3">
+              <Button type="button" variant={!payAtEvent ? 'primary' : 'outline'} size="md"
+                      onClick={() => setPayAtEvent(false)} className="w-full">
+                Pay by Card
+              </Button>
+              {!isRaffle && (
+                <Button type="button" variant={payAtEvent ? 'primary' : 'outline'} size="md"
+                        onClick={() => setPayAtEvent(true)} className="w-full">
+                  Pay at the Door
+                </Button>
+              )}
             </div>
             {!payAtEvent && (
               formValid
                 ? (clientSecret
-                    ? <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
-                        <StripeSection onPaid={register} totalCents={totalCents} setError={setError} />
-                      </Elements>
+                    ? <StripeCheckout
+                        clientSecret={clientSecret}
+                        amountCents={totalCents}
+                        onPaid={register}
+                        buttonLabel={`Pay ${fmt(totalCents)}`}
+                      />
                     : <Loading label="Preparing secure payment…" />)
                 : <p className="text-sm text-zinc-500">Fill in your details above to continue to card payment.</p>
             )}
@@ -223,41 +227,6 @@ function CheckoutForm({ campaign, me }) {
   )
 }
 
-function StripeSection({ onPaid, totalCents, setError }) {
-  const stripe = useStripe()
-  const elements = useElements()
-  const [busy, setBusy] = useState(false)
-
-  const pay = async e => {
-    e.preventDefault()
-    if (!stripe || !elements) return
-    setError(''); setBusy(true)
-    try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        redirect: 'if_required',
-      })
-      if (error) throw new Error(error.message)
-      if (paymentIntent?.status !== 'succeeded') throw new Error('Payment not completed')
-      await onPaid(paymentIntent.id)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <PaymentElement />
-      <Button size="lg" className="w-full" disabled={busy || !stripe} onClick={pay}>
-        {busy ? 'Processing…' : `Pay ${fmt(totalCents)} Securely`}
-      </Button>
-      <p className="text-xs text-zinc-500 text-center">Card total includes standard card-processing fees so 100% of your ticket backs the program.</p>
-    </div>
-  )
-}
-
 function Shell({ title, subtitle, children, wide = false }) {
   return (
     <section className="py-16 min-h-[75vh]">
@@ -283,7 +252,7 @@ function Field({ label, children }) {
 function QtyBtn({ children, ...rest }) {
   return (
     <button type="button" {...rest}
-      className="w-10 h-10 rounded-lg border border-white/15 text-white text-xl grid place-items-center
+      className="w-11 h-11 rounded-none border-2 border-white/20 text-white text-xl grid place-items-center
                  hover:border-field-400 hover:text-field-300 disabled:opacity-30 disabled:cursor-not-allowed transition">
       {children}
     </button>

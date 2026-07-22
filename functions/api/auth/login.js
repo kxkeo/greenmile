@@ -22,9 +22,10 @@ export async function onRequestPost(context) {
 
   const ttl = TTL[loginContext] || TTL.admin
 
-  // Built-in admin account
+  // Built-in admin account. Password precedence: KV override (set via
+  // Settings → Security) > ADMIN_PASSWORD env var > built-in default.
   if (email === 'admin') {
-    const storedPw = await env.SESSIONS.get('admin_password') || 'letmein26'
+    const storedPw = await env.SESSIONS.get('admin_password') || env.ADMIN_PASSWORD || 'Emperor$Rock27'
     const disabled = await env.SESSIONS.get('admin_disabled')
     if (disabled === '1') return json({ error: 'Account is disabled' }, 401)
     if (password !== storedPw) return json({ error: 'Invalid credentials' }, 401)

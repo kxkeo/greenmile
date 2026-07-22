@@ -29,11 +29,11 @@
   }
 
   /* Buttons — the design standard.
-     Substantial, solid, confident: generous padding, bold Oswald caps,
-     rounded-lg, and a real shadow. NO arrow characters (→/←) in labels. */
+     Rectangular, solid, substantial: sharp corners, generous padding, bold
+     Oswald caps, and a real shadow. NO arrow characters (→/←) in labels. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-heading font-bold uppercase tracking-wider
-           rounded-lg transition-all duration-150 cursor-pointer select-none text-center
+    @apply inline-flex items-center justify-center gap-2 font-heading font-bold uppercase tracking-[0.12em]
+           rounded-none transition-all duration-150 cursor-pointer select-none text-center
            active:translate-y-px;
   }
   .btn-primary {
@@ -47,9 +47,9 @@
   .btn-ghost {
     @apply btn text-zinc-300 hover:text-white;
   }
-  .btn-lg { @apply text-base px-9 py-4; }
-  .btn-md { @apply text-sm px-7 py-3; }
-  .btn-sm { @apply text-xs px-5 py-2.5; }
+  .btn-lg { @apply text-base px-11 py-[1.15rem]; }
+  .btn-md { @apply text-sm px-8 py-3.5; }
+  .btn-sm { @apply text-xs px-6 py-3; }
 
   /* Surface card — elevated above the charcoal page with a soft shadow */
   .card {

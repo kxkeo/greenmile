@@ -9,9 +9,11 @@ const NAV = [
   { to: '/events', label: 'Events' },
   { to: '/volunteer', label: 'Volunteer' },
   { to: '/sponsors', label: 'Sponsors' },
-  { to: '/donate', label: 'Donate' },
-  { to: '/shop', label: 'Shop' },
 ]
+
+// Footer keeps the fuller set so Donate and Shop stay reachable even though
+// they're no longer in the top nav.
+const FOOTER_NAV = [...NAV, { to: '/donate', label: 'Donate' }, { to: '/shop', label: 'Shop' }]
 
 function Logo({ onClick }) {
   return (
@@ -54,17 +56,17 @@ function Header() {
 
   const linkClass = ({ isActive }) =>
     `relative font-heading uppercase tracking-wide text-sm py-2 transition-colors ${
-      isActive ? 'text-field-400' : 'text-zinc-300 hover:text-white'
-    } after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:bg-field-500 after:transition-all ${
+      isActive ? 'text-white' : 'text-white/75 hover:text-white'
+    } after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:bg-white after:transition-all ${
       isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
     }`
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-all duration-300 border-b ${
         scrolled
-          ? 'bg-charcoal-900/90 backdrop-blur-md border-b border-white/[0.08] shadow-lg shadow-black/40'
-          : 'bg-gradient-to-b from-charcoal-900/95 to-transparent border-b border-transparent'
+          ? 'bg-field-600/95 backdrop-blur-md border-black/25 shadow-lg shadow-black/40'
+          : 'bg-field-500 border-black/10'
       }`}
     >
       <div className="section flex items-center justify-between h-16">
@@ -81,13 +83,13 @@ function Header() {
 
         <div className="hidden lg:flex items-center gap-3">
           {participant ? (
-            <Link to="/my-account/dashboard" className="btn-outline btn-sm">
+            <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white hover:bg-white/10">
               Hi, {participant.firstName}
             </Link>
           ) : (
-            <Link to="/my-account/login" className="btn-ghost btn-sm">Log in</Link>
+            <Link to="/my-account/login" className="btn btn-sm text-white/85 hover:text-white">Log in</Link>
           )}
-          <Link to="/volunteer" className="btn-primary btn-sm">Join</Link>
+          <Link to="/volunteer" className="btn btn-sm bg-white text-field-700 hover:bg-field-50">Join</Link>
         </div>
 
         {/* Mobile toggle */}
@@ -102,7 +104,7 @@ function Header() {
 
       {/* Mobile menu */}
       {open && (
-        <nav className="lg:hidden bg-charcoal-850 border-t border-white/[0.06] max-h-[calc(100dvh-4rem)] overflow-y-auto">
+        <nav className="lg:hidden bg-field-600 border-t border-black/20 max-h-[calc(100dvh-4rem)] overflow-y-auto">
           {NAV.map(n => (
             <NavLink
               key={n.to}
@@ -111,21 +113,21 @@ function Header() {
               className={({ isActive }) =>
                 `block px-6 py-3.5 font-heading uppercase tracking-wide text-sm border-l-2 ${
                   isActive
-                    ? 'text-field-400 border-field-500 bg-white/[0.03]'
-                    : 'text-zinc-300 border-transparent hover:bg-white/[0.02]'
+                    ? 'text-white border-white bg-black/15'
+                    : 'text-white/80 border-transparent hover:bg-black/10'
                 }`
               }
             >
               {n.label}
             </NavLink>
           ))}
-          <div className="flex gap-3 px-6 py-4 border-t border-white/[0.06]">
+          <div className="flex gap-3 px-6 py-4 border-t border-black/20">
             {participant ? (
-              <Link to="/my-account/dashboard" className="btn-outline btn-sm flex-1">My Account</Link>
+              <Link to="/my-account/dashboard" className="btn btn-sm border-2 border-white/50 text-white flex-1">My Account</Link>
             ) : (
-              <Link to="/my-account/login" className="btn-outline btn-sm flex-1">Log in</Link>
+              <Link to="/my-account/login" className="btn btn-sm border-2 border-white/50 text-white flex-1">Log in</Link>
             )}
-            <Link to="/volunteer" className="btn-primary btn-sm flex-1">Join</Link>
+            <Link to="/volunteer" className="btn btn-sm bg-white text-field-700 hover:bg-field-50 flex-1">Join</Link>
           </div>
         </nav>
       )}
@@ -167,7 +169,7 @@ function Footer() {
           <div>
             <div className="font-heading uppercase tracking-wider text-xs text-zinc-500 mb-4">Explore</div>
             <ul className="space-y-2.5 text-sm">
-              {NAV.map(n => (
+              {FOOTER_NAV.map(n => (
                 <li key={n.to}>
                   <Link to={n.to} className="text-zinc-400 hover:text-field-400 transition">{n.label}</Link>
                 </li>
