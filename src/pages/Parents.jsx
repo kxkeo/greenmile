@@ -418,7 +418,7 @@ function DonateModal({ dinner, onClose, onDonated }) {
             return (
               <div key={key} className="flex items-center gap-2">
                 <button type="button" onClick={() => toggle(key)}
-                  className={`shrink-0 w-32 rounded-lg border px-3 py-3 text-sm font-heading uppercase tracking-wide transition text-left ${
+                  className={`shrink-0 w-24 rounded-lg border px-2 py-2 text-xs font-heading uppercase tracking-wide transition text-center ${
                     on ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-900 border-white/10 text-zinc-400 hover:border-white/25'
                   }`}>
                   {label}
