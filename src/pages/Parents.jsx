@@ -134,7 +134,7 @@ export default function Parents() {
                   <p className="mt-10 text-center text-sm text-zinc-500">
                     Questions or want to host with another family? Contact{' '}
                     <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
-                    — or Parent Adela (559) 562-6197 or Parent Anabel (559) 679-5684.
+                    — or reach out to Adela or Anabel.
                   </p>
                 </>
               )}
