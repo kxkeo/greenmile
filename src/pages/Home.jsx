@@ -36,7 +36,7 @@ export default function Home() {
         title={<>Under The<br /><span className="text-field-400">Lights</span></>}
         subtitle="In Dinuba, Friday night lights are everything. The Green Mile Boosters are the families behind Emperor football — feeding the team, funding the gear, and packing the stands. This is how a small town takes care of its kids."
       >
-        <Button to="/volunteer" size="lg">Join the Boosters →</Button>
+        <Button to="/volunteer" size="lg">Join the Boosters</Button>
         <Button to="/donate" variant="outline" size="lg">Donate</Button>
       </Hero>
 
@@ -56,7 +56,7 @@ export default function Home() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button to="/boosters" variant="outline" size="md">Meet the boosters</Button>
-              <Button to="/team" variant="ghost" size="md">See the team →</Button>
+              <Button to="/team" variant="ghost" size="md">See the team</Button>
             </div>
           </div>
           <div>
@@ -90,7 +90,7 @@ export default function Home() {
         title="Friday Nights Are Built by Families"
         subtitle="Concessions, chain crew, team meals, senior night — none of it happens without Dinuba families. This is a town that takes care of its own. Give a few hours and be part of it."
       >
-        <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Volunteer Today →</Button>
+        <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Volunteer Today</Button>
         <Button to="/donate" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Make a Gift</Button>
       </CTABand>
 
@@ -121,7 +121,8 @@ function FeaturedEvent({ featured }) {
     <section className="bg-charcoal-850 border-y border-white/[0.06]">
       <div className="section py-16">
         <div className="card overflow-hidden grid md:grid-cols-[1fr_1.2fr]">
-          <div className="bg-cover bg-center min-h-[220px]" style={{ backgroundImage: `url(${IMG.crowd})` }} />
+          <div className="bg-cover bg-center min-h-[220px]"
+               style={{ backgroundImage: `url(${featured.meta?.kind === 'raffle' ? IMG.ballTurf : IMG.crowd})` }} />
           <div className="p-8 sm:p-10">
             <Eyebrow className="mb-3">Featured event</Eyebrow>
             <h3 className="display text-white text-3xl">{featured.title || 'Upcoming Event'}</h3>
@@ -135,7 +136,7 @@ function FeaturedEvent({ featured }) {
               <Button
                 to={String(featured.meta?.slug || '').startsWith('country-nights') ? '/events/country-nights' : '/events'}
                 size="md">
-                {featured.price_cents ? 'Get Tickets →' : 'View details →'}
+                {featured.price_cents ? 'Get Tickets' : 'View details'}
               </Button>
             </div>
           </div>

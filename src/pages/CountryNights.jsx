@@ -38,7 +38,7 @@ export default function CountryNights() {
         subtitle="Saturday, September 26, 2026 · 40481 Road 80, Dinuba · Doors 5:30 PM, dinner 6:00. Tri-tip, auctions, and the biggest booster night of the year."
         minH="min-h-[62vh]"
       >
-        {ticket && <Button to={`/events/register/${ticket.id}`} size="lg">Buy Tickets — $50 →</Button>}
+        {ticket && <Button to={`/events/register/${ticket.id}`} size="lg">Buy Tickets — $50</Button>}
         {raffle && <Button to={`/events/register/${raffle.id}`} variant="outline" size="lg">Raffle Tickets — $100</Button>}
       </Hero>
 
@@ -62,7 +62,9 @@ export default function CountryNights() {
           ) : (
             <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
               {/* Admission */}
-              <div className="card p-8 flex flex-col">
+              <div className="card overflow-hidden flex flex-col">
+                <div className="bg-cover bg-center h-36" style={{ backgroundImage: `url(${IMG.huddle})` }} />
+                <div className="p-8 flex flex-col flex-1">
                 <Eyebrow className="mb-2">Admission</Eyebrow>
                 <div className="flex items-baseline gap-2">
                   <span className="display text-white text-5xl">$50</span>
@@ -75,16 +77,19 @@ export default function CountryNights() {
                 </ul>
                 <div className="mt-7">
                   {ticket
-                    ? <Button to={`/events/register/${ticket.id}`} size="md" className="w-full">Buy Event Tickets →</Button>
+                    ? <Button to={`/events/register/${ticket.id}`} size="md" className="w-full">Buy Event Tickets</Button>
                     : <p className="text-sm text-zinc-500">Ticket sales open soon.</p>}
+                </div>
                 </div>
               </div>
 
               {/* Raffle */}
-              <div className="relative rounded-2xl p-8 flex flex-col bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50 shadow-glow">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-field-400 text-charcoal-900 font-heading uppercase tracking-wider text-[0.65rem] px-3 py-1 rounded-full whitespace-nowrap">
+              <div className="relative rounded-2xl overflow-hidden flex flex-col bg-gradient-to-b from-field-700 to-field-900 border border-field-500/50 shadow-glow">
+                <div className="bg-cover bg-center h-36" style={{ backgroundImage: `url(${IMG.ballTurf})` }} />
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-field-400 text-charcoal-900 font-heading uppercase tracking-wider text-[0.65rem] px-3 py-1 rounded-full whitespace-nowrap shadow-card">
                   Only 200 tickets sold
                 </div>
+                <div className="p-8 flex flex-col flex-1">
                 <Eyebrow className="mb-2 !text-field-100">Cash Raffle</Eyebrow>
                 <div className="flex items-baseline gap-2">
                   <span className="display text-white text-5xl">$100</span>
@@ -104,8 +109,9 @@ export default function CountryNights() {
                 <div className="mt-5">
                   {raffle && raffleLeft !== 0
                     ? <Button to={`/events/register/${raffle.id}`} variant="outline" size="md"
-                        className="w-full !border-white/40 !text-white hover:!bg-white/10">Buy Raffle Tickets →</Button>
+                        className="w-full !border-white/40 !text-white hover:!bg-white/10">Buy Raffle Tickets</Button>
                     : <p className="text-sm text-field-100/80">{raffleLeft === 0 ? 'All 200 raffle tickets are gone!' : 'Raffle sales open soon.'}</p>}
+                </div>
                 </div>
               </div>
             </div>

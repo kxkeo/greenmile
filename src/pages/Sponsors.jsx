@@ -57,7 +57,7 @@ export default function Sponsors() {
         subtitle="In a town like Dinuba, Friday night lights are where everyone is. Put your business on the banner, in the program, and over the PA — in front of the whole community, all season long."
         minH="min-h-[62vh]"
       >
-        <Button href="#packages" size="lg">See Packages →</Button>
+        <Button href="#packages" size="lg">See Packages</Button>
         <Button href="mailto:info@greenmileboosters.org?subject=Sponsorship%20Inquiry" variant="outline" size="lg">Email Us</Button>
       </Hero>
 
@@ -131,7 +131,7 @@ export default function Sponsors() {
         title="One Town. One Team. One Dream."
         subtitle="Join the local businesses backing Dinuba football — your name under the Friday-night lights, all season long."
       >
-        <Button href="mailto:info@greenmileboosters.org?subject=Sponsorship%20Inquiry" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Start a Sponsorship →</Button>
+        <Button href="mailto:info@greenmileboosters.org?subject=Sponsorship%20Inquiry" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Start a Sponsorship</Button>
       </CTABand>
     </>
   )

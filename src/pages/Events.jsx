@@ -35,7 +35,7 @@ export default function Events() {
         subtitle="From the season kickoff to the year-end banquet — this is where Dinuba comes together. Small town, big Friday nights."
         minH="min-h-[56vh]"
       >
-        <Button to="/volunteer" size="lg">Volunteer at an Event →</Button>
+        <Button to="/volunteer" size="lg">Volunteer at an Event</Button>
       </Hero>
 
       <section className="section py-20">
@@ -47,7 +47,8 @@ export default function Events() {
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {events.map((e, i) => (
                 <div key={e.id || i} className="card-hover overflow-hidden">
-                  <div className="bg-cover bg-center h-40" style={{ backgroundImage: `url(${IMG.action})` }} />
+                  <div className="bg-cover bg-center h-40"
+                       style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.action})` }} />
                   <div className="p-6">
                     {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
                     <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>
@@ -56,7 +57,7 @@ export default function Events() {
                       <Button
                         to={String(e.meta?.slug || '').startsWith('country-nights') ? '/events/country-nights' : `/events/register/${e.id}`}
                         size="sm">
-                        {e.price_cents ? 'Get Tickets →' : 'Register →'}
+                        {e.price_cents ? 'Get Tickets' : 'Register'}
                       </Button>
                     </div>
                   </div>

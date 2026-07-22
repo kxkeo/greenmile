@@ -263,7 +263,7 @@ function Shell({ title, subtitle, children, wide = false }) {
     <section className="py-16 min-h-[75vh]">
       <div className={`mx-auto px-5 w-full ${wide ? 'max-w-2xl' : 'max-w-md'}`}>
         <div className="mb-6">
-          <Link to="/events/country-nights" className="text-sm text-zinc-400 hover:text-field-400">← Back</Link>
+          <Link to="/events/country-nights" className="text-sm text-zinc-400 hover:text-field-400">Back</Link>
         </div>
         <div className="text-center mb-8">
           <Eyebrow className="mb-2">Green Mile Boosters</Eyebrow>

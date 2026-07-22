@@ -79,7 +79,7 @@ export default function Donate() {
             Giving <span className="display text-field-400 text-2xl align-middle">${amount || 0}</span> to Emperors football
           </div>
           <Button onClick={goCheckout} size="lg" disabled={amount <= 0} className={amount <= 0 ? 'opacity-50 cursor-not-allowed' : ''}>
-            Continue to Secure Checkout →
+            Continue to Secure Checkout
           </Button>
           <p className="mt-4 text-xs text-zinc-600 max-w-md mx-auto">
             Payments are processed securely by Stripe. Online giving goes live once the Green Mile
@@ -99,7 +99,7 @@ export default function Donate() {
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button to="/volunteer" variant="outline" size="md">Volunteer</Button>
             <Button to="/sponsors" variant="outline" size="md">Become a Sponsor</Button>
-            <Button to="/shop" variant="ghost" size="md">Visit the Shop →</Button>
+            <Button to="/shop" variant="ghost" size="md">Visit the Shop</Button>
           </div>
         </div>
       </section>

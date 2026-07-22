@@ -33,7 +33,7 @@ export default function Volunteer() {
         subtitle="In Dinuba, Friday nights are built by families — and we take care of our own. Give a few hours, join the boosters, and be part of something this town has cheered for generations."
         minH="min-h-[68vh]"
       >
-        <Button to="/my-account/signup" size="lg">Sign Up to Volunteer →</Button>
+        <Button to="/my-account/signup" size="lg">Sign Up to Volunteer</Button>
         <Button href="#tiers" variant="outline" size="lg">Membership</Button>
       </Hero>
 
@@ -104,7 +104,7 @@ export default function Volunteer() {
         title="Let's Build Something Great"
         subtitle="Create your free account to sign up for volunteer shifts, manage your membership, and stay in the loop all season."
       >
-        <Button to="/my-account/signup" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Create My Account →</Button>
+        <Button to="/my-account/signup" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Create My Account</Button>
         <Button href="mailto:info@greenmileboosters.org" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Email the Boosters</Button>
       </CTABand>
     </>

@@ -33,7 +33,7 @@ export default function Boosters() {
         subtitle="We're the Green Mile Boosters — the Dinuba High football booster club. A rural town, a tight community, and a whole lot of people who love this game and these kids."
         minH="min-h-[60vh]"
       >
-        <Button to="/volunteer" size="lg">Join Us →</Button>
+        <Button to="/volunteer" size="lg">Join Us</Button>
         <Button to="/donate" variant="outline" size="lg">Support the Program</Button>
       </Hero>
 
@@ -56,7 +56,7 @@ export default function Boosters() {
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button to="/donate" size="md">Make a Gift</Button>
-            <Button to="/events" variant="ghost" size="md">Our events →</Button>
+            <Button to="/events" variant="ghost" size="md">Our events</Button>
           </div>
         </div>
         <StatStrip stats={STATS} />
@@ -95,7 +95,7 @@ export default function Boosters() {
         title="Ready to Back the Emperors?"
         subtitle="Membership is open to every Dinuba family. Bring your time, your skills, or just your green-and-white spirit — there's a seat for you on the Green Mile."
       >
-        <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Become a Member →</Button>
+        <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Become a Member</Button>
       </CTABand>
     </>
   )

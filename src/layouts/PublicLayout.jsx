@@ -188,7 +188,9 @@ function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-zinc-600">© {new Date().getFullYear()} The Green Mile Boosters · Dinuba High School Football</span>
+          <span className="text-xs text-zinc-600">
+            © {new Date().getFullYear()} The Green Mile Boosters · Dinuba High School Football · EIN 92-2360865
+          </span>
           <span onClick={() => navigate('/admin/login')} className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 cursor-pointer select-none">
             <img src={IMG.logo} alt="" className="h-4 w-auto opacity-60" /> Go Emperors
           </span>

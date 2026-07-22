@@ -27,14 +27,16 @@ export default {
           400: '#a8a9ad',
           500: '#8b8d92',
         },
-        // Charcoal / near-black surfaces.
+        // Charcoal surfaces — a true dark-gray charcoal (green-tinted), not
+        // near-black. 900 is the page background; 850/800 step up for bands
+        // and cards so elevation reads with the card shadow.
         charcoal: {
-          900: '#0a0c0b', // page background
-          850: '#0f1311',
-          800: '#141815',
-          700: '#1b211d',
-          600: '#252c27',
-          500: '#323a34',
+          900: '#181b19', // page background
+          850: '#1e221f',
+          800: '#252a26', // cards
+          700: '#2d332e',
+          600: '#373e38',
+          500: '#434b44',
         },
       },
       fontFamily: {
@@ -44,6 +46,7 @@ export default {
       },
       boxShadow: {
         glow: '0 0 40px -8px rgba(24,83,42,0.55)',
+        card: '0 12px 32px -12px rgba(0,0,0,0.55), 0 2px 8px -2px rgba(0,0,0,0.4)',
       },
       backgroundImage: {
         'field-lines':

@@ -14,7 +14,7 @@ export default function DonateCheckout() {
   return (
     <section className="section py-16 min-h-[75vh] max-w-2xl">
       <div className="mb-8">
-        <Link to="/donate" className="text-sm text-zinc-400 hover:text-field-400">← Back to donate</Link>
+        <Link to="/donate" className="text-sm text-zinc-400 hover:text-field-400">Back to donate</Link>
       </div>
 
       <div className="card p-8">

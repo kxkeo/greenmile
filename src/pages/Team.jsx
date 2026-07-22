@@ -35,7 +35,7 @@ export default function Team() {
         subtitle="Three levels, one program, one Green Mile. These are Dinuba's kids — meet the staff and follow the season."
         minH="min-h-[58vh]"
       >
-        <Button to="/events" size="lg">Upcoming Events →</Button>
+        <Button to="/events" size="lg">Upcoming Events</Button>
       </Hero>
 
       {/* Program levels */}
@@ -96,7 +96,7 @@ export default function Team() {
             </div>
           )}
           <div className="mt-8 text-center">
-            <Button to="/events" variant="outline" size="md">See all events →</Button>
+            <Button to="/events" variant="outline" size="md">See all events</Button>
           </div>
         </div>
       </section>
