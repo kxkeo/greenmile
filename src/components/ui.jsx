@@ -130,10 +130,12 @@ export function Loading({ label = 'Loading…' }) {
   )
 }
 
-export function EmptyState({ icon = '🏈', title, children }) {
+export function EmptyState({ icon, title, children }) {
   return (
     <div className="card py-16 text-center">
-      <div className="text-4xl mb-3">{icon}</div>
+      {icon
+        ? <div className="text-4xl mb-3">{icon}</div>
+        : <img src="/img/logo.png" alt="" className="h-16 w-auto mx-auto mb-3 opacity-80" />}
       <div className="font-heading uppercase tracking-wide text-white text-lg">{title}</div>
       {children && <p className="mt-2 text-sm text-zinc-400">{children}</p>}
     </div>

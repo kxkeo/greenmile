@@ -55,7 +55,7 @@ export function AuthShell({ title, subtitle, children }) {
     <section className="min-h-[80vh] flex items-center py-16">
       <div className="w-full max-w-md mx-auto px-5">
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">🏈</div>
+          <img src="/img/logo.png" alt="Dinuba Emperors crest" className="h-20 w-auto mx-auto mb-4" />
           <h1 className="display text-white text-4xl">{title}</h1>
           {subtitle && <p className="mt-2 text-zinc-400 text-sm">{subtitle}</p>}
         </div>

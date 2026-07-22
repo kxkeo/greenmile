@@ -1,13 +1,13 @@
-// Imagery served locally from /public/img so nothing depends on a remote CDN.
-// These are Creative-Commons high-school-football placeholders — swap with real
-// Dinuba Emperors photos by replacing the files in /public/img (keep the same
-// names) or by changing the paths below. The dark design + green overlay carries
-// the look even if an image is missing.
+// Real Dinuba Emperors photography, served locally from /public/img.
+// All shots taken at Claud Hebert Field and team events — swap or add by
+// dropping files in /public/img and updating the paths below.
 export const IMG = {
-  heroStadium: '/img/hero-run.jpg', // night runner breaking away — Home hero
-  fieldNight:  '/img/handoff.jpg',  // night handoff — Events hero
-  action:      '/img/tackle.jpg',   // open-field tackle — Team/cards
-  huddle:      '/img/runner.jpg',   // ball carrier — Volunteer hero
-  gear:        '/img/ball.jpg',     // football on the yard lines — Donate/Shop
-  crowd:       '/img/stadium.jpg',  // stands & flags — Boosters/community
+  heroStadium: '/img/runout.jpg',           // team running out to the crowd — Home hero
+  fieldNight:  '/img/practice-dusk.jpg',    // dusk practice under the lights — Events hero
+  action:      '/img/night-action.jpg',     // Friday-night game action — Team hero / event cards
+  huddle:      '/img/pregame.jpg',          // team gathered pregame in the whites — Volunteer hero
+  gear:        '/img/home-of-emperors.jpg', // "Home of the Emperors" grandstand — Donate/Shop hero
+  crowd:       '/img/crowd.jpg',            // packed stands at sunset — Boosters hero / featured card
+  sideline:    '/img/sideline.jpg',         // sideline under the lights — Home "Friday Night" band
+  logo:        '/img/logo.png',             // DHS Emperors crest
 }

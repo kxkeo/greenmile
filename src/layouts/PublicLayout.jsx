@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { IMG } from '../content/images'
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
@@ -14,7 +15,7 @@ const NAV = [
 function Logo({ onClick }) {
   return (
     <Link to="/" onClick={onClick} className="flex items-center gap-2.5 group shrink-0">
-      <span className="text-2xl leading-none">🏈</span>
+      <img src={IMG.logo} alt="Dinuba Emperors crest" className="h-10 w-auto" />
       <span className="leading-none">
         <span className="block font-display uppercase text-xl tracking-wide text-white group-hover:text-field-300 transition">
           Green Mile
@@ -140,7 +141,7 @@ function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2 max-w-sm">
             <div className="flex items-center gap-2.5 mb-4">
-              <span className="text-2xl">🏈</span>
+              <img src={IMG.logo} alt="Dinuba Emperors crest" className="h-10 w-auto" />
               <span className="font-display uppercase text-xl tracking-wide text-white">Green Mile Boosters</span>
             </div>
             <p className="text-sm text-zinc-400 leading-relaxed">
@@ -185,8 +186,8 @@ function Footer() {
 
         <div className="mt-12 pt-6 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
           <span className="text-xs text-zinc-600">© {new Date().getFullYear()} The Green Mile Boosters · Dinuba High School Football</span>
-          <span onClick={() => navigate('/admin/login')} className="text-xs text-zinc-600 hover:text-zinc-400 cursor-pointer select-none">
-            🏈 Go Emperors
+          <span onClick={() => navigate('/admin/login')} className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 cursor-pointer select-none">
+            <img src={IMG.logo} alt="" className="h-4 w-auto opacity-60" /> Go Emperors
           </span>
         </div>
       </div>
