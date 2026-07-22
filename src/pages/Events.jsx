@@ -30,7 +30,7 @@ export default function Events() {
   return (
     <>
       <Hero
-        image={IMG.fieldNight}
+        image={IMG.practice}
         eyebrow="Booster Calendar"
         title="Events"
         subtitle="From the season kickoff to the year-end banquet — this is where Dinuba comes together. Small town, big Friday nights."
@@ -52,7 +52,7 @@ export default function Events() {
                 return (
                   <Link key={e.id || i} to={infoTo} className="card-hover overflow-hidden block group">
                     <div className="bg-cover bg-center h-40 transition-transform duration-300 group-hover:scale-[1.03]"
-                         style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.action})` }} />
+                         style={{ backgroundImage: `url(${e.meta?.kind === 'raffle' ? IMG.ballTurf : e.meta?.slug === 'country-nights' ? IMG.crowd : IMG.nightRun})` }} />
                     <div className="p-6">
                       {e.event_date && <div className="text-field-400 font-heading uppercase tracking-wide text-xs mb-2">{e.event_date}</div>}
                       <h3 className="font-heading uppercase tracking-wide text-lg text-white">{e.title}</h3>

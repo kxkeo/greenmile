@@ -21,7 +21,7 @@ export default function Volunteer() {
   return (
     <>
       <Hero
-        image={IMG.huddle}
+        image={IMG.takeField}
         eyebrow="Get Involved"
         title={<>Volunteer.<br /><span className="text-field-400">Join. Belong.</span></>}
         subtitle="In Dinuba, Friday nights are built by families — and we take care of our own. Give a few hours, join the boosters, and be part of something this town has cheered for generations."

@@ -29,7 +29,7 @@ export default function Team() {
   return (
     <>
       <Hero
-        image={IMG.action}
+        image={IMG.lineDay}
         eyebrow="Dinuba Emperors Football"
         title="The Team"
         subtitle="Three levels, one program, one Green Mile. These are Dinuba's kids — meet the staff and follow the season."

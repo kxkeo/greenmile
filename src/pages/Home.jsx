@@ -96,7 +96,7 @@ export default function Home() {
 
       {/* Team teaser */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${IMG.sideline})` }} />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${IMG.sunset})` }} />
         <div className="absolute inset-0 bg-charcoal-900/85" />
         <div className="relative section py-20 text-center">
           <Eyebrow className="mb-3">Go Emperors</Eyebrow>
