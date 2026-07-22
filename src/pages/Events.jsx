@@ -32,7 +32,7 @@ export default function Events() {
         image={IMG.fieldNight}
         eyebrow="Booster Calendar"
         title="Events"
-        subtitle="From the season kickoff to the year-end banquet — here's where the Green Mile comes together."
+        subtitle="From the season kickoff to the year-end banquet — this is where Dinuba comes together. Small town, big Friday nights."
         minH="min-h-[56vh]"
       >
         <Button to="/volunteer" size="lg">Volunteer at an Event →</Button>

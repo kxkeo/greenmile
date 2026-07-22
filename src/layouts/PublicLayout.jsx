@@ -146,8 +146,9 @@ function Footer() {
               <span className="font-display uppercase text-xl tracking-wide text-white">Green Mile Boosters</span>
             </div>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              The booster club behind Dinuba High School Emperors football — funding gear,
-              fueling the team, and bringing families together under the Friday-night lights.
+              The booster club behind Dinuba High School Emperors football. We're a small
+              Central Valley town with a big Friday-night tradition — a tight community that
+              takes care of its kids, on the field and off.
             </p>
             <div className="flex gap-3 mt-5">
               <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"

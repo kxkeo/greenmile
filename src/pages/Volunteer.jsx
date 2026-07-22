@@ -4,7 +4,7 @@ import { IMG } from '../content/images'
 const WHY = [
   { icon: '👀', title: 'Your Kid Sees You Show Up', body: 'Nothing tells a player they matter like watching their family work the gate, flip the burgers, or run the chains.' },
   { icon: '💪', title: 'Stronger Program', body: 'More volunteers means more funds, better gear, and bigger Friday nights. Many hands make a powerhouse.' },
-  { icon: '🫶', title: 'Find Your People', body: 'The booster crew becomes family fast. You will leave every game with new friends and a deeper connection to Dinuba.' },
+  { icon: '🫶', title: 'Find Your People', body: 'This is a tight community, and the booster crew becomes family fast. You will leave every game with new friends and deeper Dinuba roots.' },
   { icon: '⏱️', title: 'Any Amount of Time Helps', body: 'One shift a season or every single game — there is a spot for you. No minimum, no pressure, all appreciated.' },
 ]
 
@@ -30,7 +30,7 @@ export default function Volunteer() {
         image={IMG.huddle}
         eyebrow="Get Involved"
         title={<>Volunteer.<br /><span className="text-field-400">Join. Belong.</span></>}
-        subtitle="Friday nights are built by families. Give a few hours, join the boosters, and become part of something Dinuba has cheered for generations."
+        subtitle="In Dinuba, Friday nights are built by families — and we take care of our own. Give a few hours, join the boosters, and be part of something this town has cheered for generations."
         minH="min-h-[68vh]"
       >
         <Button to="/my-account/signup" size="lg">Sign Up to Volunteer →</Button>
@@ -39,7 +39,7 @@ export default function Volunteer() {
 
       {/* Why volunteer */}
       <section className="section py-20">
-        <SectionHeading eyebrow="Why families join" title="It Pays Off — On the Field and At Home" intro="Booster involvement is one of the simplest, highest-impact things a Dinuba family can do." />
+        <SectionHeading eyebrow="Why families join" title="It Pays Off — On the Field and At Home" intro="We're a small town that shows up for its kids. Booster involvement is one of the simplest, highest-impact ways a Dinuba family can do that." />
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {WHY.map(w => <FeatureCard key={w.title} icon={w.icon} title={w.title}>{w.body}</FeatureCard>)}
         </div>

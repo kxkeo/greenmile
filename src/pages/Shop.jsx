@@ -18,7 +18,7 @@ export default function Shop() {
         image={IMG.gear}
         eyebrow="Emperor Gear"
         title="The Shop"
-        subtitle="Rep the green and white. Every purchase puts money straight back into the program."
+        subtitle="Rep the green and white all over town. Every purchase puts money straight back into our kids' program."
         minH="min-h-[54vh]"
       >
         <Button to="/donate" variant="outline" size="lg">Or Make a Gift</Button>

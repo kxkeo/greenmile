@@ -54,7 +54,7 @@ export default function Sponsors() {
         image={IMG.sideline}
         eyebrow="One Town, One Team, One Dream"
         title={<>Sponsor the<br /><span className="text-field-400">Emperors</span></>}
-        subtitle="Put your business on the banner, in the program, and over the PA — in front of thousands of Dinuba families every Friday night."
+        subtitle="In a town like Dinuba, Friday night lights are where everyone is. Put your business on the banner, in the program, and over the PA — in front of the whole community, all season long."
         minH="min-h-[62vh]"
       >
         <Button href="#packages" size="lg">See Packages →</Button>
@@ -65,7 +65,7 @@ export default function Sponsors() {
         <SectionHeading
           eyebrow="Sponsor packages"
           title="Pick Your Level"
-          intro="Every package puts your business in front of the Green Mile crowd all season long — and every dollar goes straight to the players."
+          intro="Local businesses are the backbone of this community, and the community fills those stands. Every package puts your name in front of the Green Mile crowd — and every dollar goes straight to our kids."
         />
         <div className="mt-12 grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto items-start">
           {TIERS.map(t => (

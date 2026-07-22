@@ -4,14 +4,14 @@ import { IMG } from '../content/images'
 
 const PILLARS = [
   { icon: '🪖', title: 'Gear & Equipment', body: 'Helmets, pads, uniforms, and the safety equipment every Emperor needs to take the field with confidence.' },
-  { icon: '🎓', title: 'Player Support', body: 'Scholarships, academic support, team meals, and the little things that help athletes succeed on and off the field.' },
-  { icon: '🏟️', title: 'Friday Night Experience', body: 'Concessions, spirit, senior nights, and the game-day atmosphere that makes Dinuba football unforgettable.' },
+  { icon: '💚', title: 'Taking Care of Our Kids', body: 'Team meals, scholarships, travel, and the little things — because in Dinuba, these aren\'t just players. They\'re our kids.' },
+  { icon: '🏟️', title: 'Friday Night Lights', body: 'Concessions, senior nights, a packed Claud Hebert Field — the nights this whole town circles on the calendar.' },
 ]
 
 const STATS = [
-  { value: '$0', label: 'cost to dream big' },
-  { value: '60+', label: 'student-athletes' },
-  { value: '10', label: 'home games a year' },
+  { value: '1', label: 'town behind the team' },
+  { value: '60+', label: 'of our kids on the field' },
+  { value: '10', label: 'friday nights a year' },
   { value: '100%', label: 'community powered' },
 ]
 
@@ -34,7 +34,7 @@ export default function Home() {
         image={IMG.heroStadium}
         eyebrow="Dinuba High School Football"
         title={<>Under The<br /><span className="text-field-400">Lights</span></>}
-        subtitle="The Green Mile Boosters fuel the Emperors — funding the gear, feeding the team, and filling the stands. This is how a town backs its program."
+        subtitle="In Dinuba, Friday night lights are everything. The Green Mile Boosters are the families behind Emperor football — feeding the team, funding the gear, and packing the stands. This is how a small town takes care of its kids."
       >
         <Button to="/volunteer" size="lg">Join the Boosters →</Button>
         <Button to="/donate" variant="outline" size="lg">Donate</Button>
@@ -46,12 +46,13 @@ export default function Home() {
           <div>
             <Eyebrow className="mb-3">Who we are</Eyebrow>
             <h2 className="display text-white text-3xl sm:text-4xl">
-              Every great team has a crew behind it.
+              In Dinuba, football is family.
             </h2>
             <p className="mt-4 text-zinc-400 leading-relaxed max-w-xl">
-              The Green Mile Boosters are the parents, alumni, and fans who make Emperors football
-              possible. Booster dollars and volunteer hours go straight to the players — not red tape.
-              When families show up, the whole program rises.
+              We're a rural town in the heart of the Central Valley, and on Friday nights there's
+              only one place to be. The Green Mile Boosters are the parents, grandparents, alumni,
+              and neighbors behind Dinuba High football — every dollar and every volunteer hour
+              goes straight to our kids, not red tape. When this community shows up, the Emperors rise.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button to="/boosters" variant="outline" size="md">Meet the boosters</Button>
@@ -71,7 +72,7 @@ export default function Home() {
         <SectionHeading
           eyebrow="What your support funds"
           title="Built for the Game"
-          intro="Every dollar and every hour shows up on the field. Here's where it goes."
+          intro="Every dollar and every hour shows up on the field, on our kids. Here's where it goes."
         />
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {PILLARS.map(p => (
@@ -87,7 +88,7 @@ export default function Home() {
       <CTABand
         eyebrow="Why it matters"
         title="Friday Nights Are Built by Families"
-        subtitle="Concessions, chain crew, team meals, fundraising, senior night — none of it happens without volunteers. Give a few hours and become part of the Emperor family."
+        subtitle="Concessions, chain crew, team meals, senior night — none of it happens without Dinuba families. This is a town that takes care of its own. Give a few hours and be part of it."
       >
         <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Volunteer Today →</Button>
         <Button to="/donate" variant="outline" size="lg" className="!border-white/40 !text-white hover:!bg-white/10">Make a Gift</Button>
@@ -101,7 +102,8 @@ export default function Home() {
           <Eyebrow className="mb-3">Go Emperors</Eyebrow>
           <h2 className="display text-white text-4xl sm:text-6xl">Be There Friday Night</h2>
           <p className="mt-4 text-zinc-300 max-w-xl mx-auto">
-            Catch the schedule, meet the coaches, and back the boys in green. The Green Mile is calling.
+            There's nothing like a Friday night on the Green Mile — the lights, the band, the whole
+            town in green and white. Catch the schedule and come be part of it.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button to="/team" size="lg">Team & Schedule</Button>

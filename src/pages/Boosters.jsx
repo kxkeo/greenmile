@@ -2,9 +2,9 @@ import { Hero, SectionHeading, FeatureCard, StatStrip, CTABand, Button, Eyebrow 
 import { IMG } from '../content/images'
 
 const VALUES = [
-  { icon: '🤝', title: 'Family First', body: 'We are parents, alumni, and neighbors who believe Dinuba kids deserve the best. Everyone is welcome — no experience required.' },
-  { icon: '💯', title: 'Straight to the Players', body: 'Booster funds skip the bureaucracy and go directly to gear, meals, travel, and the experiences that build a program.' },
-  { icon: '🌿', title: 'Tradition & Pride', body: 'The Green Mile is more than a field — it is decades of Emperor pride. We keep that tradition alive for the next generation.' },
+  { icon: '🤝', title: 'We Take Care of Our Kids', body: 'We are parents, grandparents, alumni, and neighbors who believe Dinuba kids deserve the best. Everyone is welcome — no experience required.' },
+  { icon: '🌾', title: 'Rural & Proud', body: 'We\'re a farm town in the Central Valley, and that\'s our strength. Nobody outworks this community, and nobody backs its kids harder.' },
+  { icon: '🌿', title: 'Friday Night Tradition', body: 'The Green Mile is more than a field — it\'s decades of Emperor pride under the lights. We keep that tradition alive for the next generation.' },
 ]
 
 const BOARD = [
@@ -17,7 +17,7 @@ const BOARD = [
 ]
 
 const STATS = [
-  { value: '1', label: 'mission: the players' },
+  { value: '1', label: 'mission: our kids' },
   { value: '6', label: 'board volunteers' },
   { value: '52', label: 'weeks of work' },
   { value: '∞', label: 'emperor pride' },
@@ -30,7 +30,7 @@ export default function Boosters() {
         image={IMG.crowd}
         eyebrow="The Green Mile Boosters"
         title="Behind Every Emperor"
-        subtitle="A volunteer-run booster club pouring time, energy, and resources into Dinuba High School football."
+        subtitle="We're the Green Mile Boosters — the Dinuba High football booster club. A rural town, a tight community, and a whole lot of people who love this game and these kids."
         minH="min-h-[60vh]"
       >
         <Button to="/volunteer" size="lg">Join Us →</Button>
@@ -43,14 +43,15 @@ export default function Boosters() {
           <h2 className="display text-white text-4xl">Fund the dream. Fuel the team.</h2>
           <div className="mt-5 space-y-4 text-zinc-400 leading-relaxed">
             <p>
-              The Green Mile Boosters exist to give Dinuba's student-athletes every advantage —
-              quality equipment, safe travel, good food, and a community that shows up. We believe
-              a strong football program builds disciplined, confident young people who carry those
-              lessons far beyond the field.
+              Dinuba is a small farm town, and Friday night lights are huge here — when the
+              Emperors play, the whole community is in the stands. The Green Mile Boosters exist
+              to give our kids every advantage: quality equipment, safe travel, good food, and a
+              town that shows up for them. Football builds disciplined, confident young people,
+              and those lessons carry far beyond the field.
             </p>
             <p>
-              We are entirely volunteer-run. There are no paid staff and no overhead empire — just
-              families rolling up their sleeves so the coaches can coach and the players can play.
+              We are entirely volunteer-run — no paid staff, no overhead, just Dinuba families
+              rolling up their sleeves so the coaches can coach and our kids can play.
             </p>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -92,7 +93,7 @@ export default function Boosters() {
 
       <CTABand
         title="Ready to Back the Emperors?"
-        subtitle="Membership is open to every family. Bring your time, your skills, or just your green-and-white spirit."
+        subtitle="Membership is open to every Dinuba family. Bring your time, your skills, or just your green-and-white spirit — there's a seat for you on the Green Mile."
       >
         <Button to="/volunteer" size="lg" className="!bg-white !text-field-800 hover:!bg-field-50">Become a Member →</Button>
       </CTABand>

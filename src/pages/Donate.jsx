@@ -28,12 +28,12 @@ export default function Donate() {
         image={IMG.gear}
         eyebrow="Back the Emperors"
         title="Donate"
-        subtitle="Every gift goes straight to the players — gear, meals, travel, and scholarships. 100% community powered."
+        subtitle="Every gift goes straight to our kids — gear, meals, travel, and scholarships. No red tape, 100% community powered. That's the Dinuba way."
         minH="min-h-[56vh]"
       />
 
       <section className="section py-20">
-        <SectionHeading eyebrow="Choose your impact" title="Pick an Amount" intro="Tax-deductible where applicable. Pick a tier or enter your own — every dollar suits up an Emperor." />
+        <SectionHeading eyebrow="Choose your impact" title="Pick an Amount" intro="Tax-deductible where applicable. Pick a tier or enter your own — in a town like ours, every dollar suits up one of our kids." />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {TIERS.map(t => {

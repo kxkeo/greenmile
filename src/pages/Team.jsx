@@ -32,7 +32,7 @@ export default function Team() {
         image={IMG.action}
         eyebrow="Dinuba Emperors Football"
         title="The Team"
-        subtitle="Three levels, one program, one Green Mile. Meet the staff and follow the season."
+        subtitle="Three levels, one program, one Green Mile. These are Dinuba's kids — meet the staff and follow the season."
         minH="min-h-[58vh]"
       >
         <Button to="/events" size="lg">Upcoming Events →</Button>
@@ -53,7 +53,7 @@ export default function Team() {
       {/* Coaching staff */}
       <section className="bg-charcoal-850 border-y border-white/[0.06]">
         <div className="section py-20">
-          <SectionHeading eyebrow="Sidelines" title="Coaching Staff" intro="The leaders developing Emperors on the field and in life. Real names & bios coming soon." />
+          <SectionHeading eyebrow="Sidelines" title="Coaching Staff" intro="The leaders developing our kids on the field and in life. Real names & bios coming soon." />
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {COACHES.map(c => (
               <div key={c.role} className="card-hover p-6 text-center">
