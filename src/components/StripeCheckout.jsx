@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Button } from './ui'
+import { grossUpForStripe, processingFeeCents } from '../utils/stripeFee'
 
 // Shared Stripe card-payment surface, used by Donate, Sponsor, and Event
 // checkouts so there's one place that mounts the Payment Element and confirms
@@ -15,6 +16,33 @@ const stripePromise = STRIPE_READY ? loadStripe(PK) : null
 
 export const fmtUSD = c =>
   `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 })}`
+
+// Re-export the fee math so pages can import everything Stripe-related from one
+// place (single source of truth: src/utils/stripeFee.js).
+export { grossUpForStripe, processingFeeCents } from '../utils/stripeFee'
+
+// Buyer-facing breakdown: base amount + the 2.9% + $0.30 card fee = total
+// charged. Shown on every card checkout so the amount on the button matches
+// what Stripe actually charges — the fee is passed transparently to the payer.
+export function FeeBreakdown({ baseCents, label = 'Subtotal', className = '' }) {
+  const fee   = processingFeeCents(baseCents)
+  const total = grossUpForStripe(baseCents)
+  if (baseCents <= 0) return null
+  return (
+    <div className={`rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4 text-sm ${className}`}>
+      <div className="flex items-center justify-between text-zinc-400">
+        <span>{label}</span><span className="text-zinc-200">{fmtUSD(baseCents)}</span>
+      </div>
+      <div className="flex items-center justify-between text-zinc-400 mt-2">
+        <span>Card processing fee</span><span className="text-zinc-200">{fmtUSD(fee)}</span>
+      </div>
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.07]">
+        <span className="font-heading uppercase tracking-wide text-zinc-200">Total</span>
+        <span className="display text-field-400 text-2xl">{fmtUSD(total)}</span>
+      </div>
+    </div>
+  )
+}
 
 export default function StripeCheckout({ clientSecret, amountCents, onPaid, buttonLabel, note }) {
   if (!STRIPE_READY || !clientSecret) return null

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
 import { Button, Eyebrow, Loading } from '../components/ui'
-import StripeCheckout, { STRIPE_READY, fmtUSD as fmt } from '../components/StripeCheckout'
+import StripeCheckout, { STRIPE_READY, fmtUSD as fmt, FeeBreakdown, grossUpForStripe } from '../components/StripeCheckout'
 
 // Generic paid-event checkout: /events/register/:id
 // Works for any active campaign (Country Nights dinner, raffle, alumni, …).
@@ -191,12 +191,15 @@ function CheckoutForm({ campaign, me }) {
             {!payAtEvent && (
               formValid
                 ? (clientSecret
-                    ? <StripeCheckout
-                        clientSecret={clientSecret}
-                        amountCents={totalCents}
-                        onPaid={register}
-                        buttonLabel={`Pay ${fmt(totalCents)}`}
-                      />
+                    ? <>
+                        <FeeBreakdown baseCents={totalCents} label={`${qty} Ticket${qty > 1 ? 's' : ''}`} />
+                        <StripeCheckout
+                          clientSecret={clientSecret}
+                          amountCents={grossUpForStripe(totalCents)}
+                          onPaid={register}
+                          buttonLabel={`Pay ${fmt(grossUpForStripe(totalCents))}`}
+                        />
+                      </>
                     : <Loading label="Preparing secure payment…" />)
                 : <p className="text-sm text-zinc-500">Fill in your details above to continue to card payment.</p>
             )}

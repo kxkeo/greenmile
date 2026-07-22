@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Button, Eyebrow, Loading } from '../components/ui'
-import StripeCheckout, { STRIPE_READY, fmtUSD } from '../components/StripeCheckout'
+import StripeCheckout, { STRIPE_READY, fmtUSD, FeeBreakdown, grossUpForStripe } from '../components/StripeCheckout'
 
 // Public donation checkout — no account required. Collects the donor's name and
 // email, spins up a PaymentIntent, takes the card via the shared Stripe
@@ -127,12 +127,15 @@ export default function DonateCheckout() {
               ) : creating ? (
                 <Loading label="Preparing secure payment…" />
               ) : (
-                <StripeCheckout
-                  clientSecret={clientSecret}
-                  amountCents={amountCents}
-                  onPaid={recordDonation}
-                  buttonLabel={`Donate ${fmtUSD(amountCents)}`}
-                />
+                <>
+                  <FeeBreakdown baseCents={amountCents} label="Donation" className="mb-5" />
+                  <StripeCheckout
+                    clientSecret={clientSecret}
+                    amountCents={grossUpForStripe(amountCents)}
+                    onPaid={recordDonation}
+                    buttonLabel={`Donate ${fmtUSD(grossUpForStripe(amountCents))}`}
+                  />
+                </>
               )}
             </div>
           ) : (

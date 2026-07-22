@@ -3,7 +3,7 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, Loading } from '../components/ui'
 import { IMG } from '../content/images'
 import { findTier, SPONSOR_TIERS } from '../content/sponsorTiers'
-import StripeCheckout, { STRIPE_READY, fmtUSD } from '../components/StripeCheckout'
+import StripeCheckout, { STRIPE_READY, fmtUSD, FeeBreakdown, grossUpForStripe } from '../components/StripeCheckout'
 
 // Sponsor package info + card checkout: /sponsors/:slug
 // Public (a business owner shouldn't need an account). Records the sponsorship
@@ -166,12 +166,15 @@ export default function SponsorDetail() {
               ) : creating ? (
                 <Loading label="Preparing secure payment…" />
               ) : (
-                <StripeCheckout
-                  clientSecret={clientSecret}
-                  amountCents={tier.amountCents}
-                  onPaid={recordSponsorship}
-                  buttonLabel={`Sponsor ${fmtUSD(tier.amountCents)}`}
-                />
+                <>
+                  <FeeBreakdown baseCents={tier.amountCents} label={tier.name} className="mb-5" />
+                  <StripeCheckout
+                    clientSecret={clientSecret}
+                    amountCents={grossUpForStripe(tier.amountCents)}
+                    onPaid={recordSponsorship}
+                    buttonLabel={`Sponsor ${fmtUSD(grossUpForStripe(tier.amountCents))}`}
+                  />
+                </>
               )}
             </div>
           ) : (
