@@ -81,7 +81,7 @@ export default function Team() {
           ) : (
             <div className="space-y-3">
               {schedule.map((e, i) => (
-                <div key={e.id || i} className="card p-5 flex items-center justify-between gap-4">
+                <div key={e.id || i} className="card p-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                   <div>
                     <div className="font-heading uppercase tracking-wide text-white">{e.title || e.name || 'Event'}</div>
                     {e.location && <div className="text-sm text-zinc-500">{e.location}</div>}

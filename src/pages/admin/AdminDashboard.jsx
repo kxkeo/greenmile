@@ -105,7 +105,7 @@ function Row({ left, right }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5 text-sm">
       <span className="text-zinc-200 truncate">{left}</span>
-      <span className="text-field-400 font-heading whitespace-nowrap">{right}</span>
+      <span className="text-field-400 font-heading truncate text-right shrink-0 max-w-[55%]">{right}</span>
     </div>
   )
 }

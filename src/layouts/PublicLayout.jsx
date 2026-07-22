@@ -100,7 +100,7 @@ function Header() {
 
       {/* Mobile menu */}
       {open && (
-        <nav className="lg:hidden bg-charcoal-850 border-t border-white/[0.06]">
+        <nav className="lg:hidden bg-charcoal-850 border-t border-white/[0.06] max-h-[calc(100dvh-4rem)] overflow-y-auto">
           {NAV.map(n => (
             <NavLink
               key={n.to}

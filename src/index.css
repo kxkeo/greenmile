@@ -31,7 +31,7 @@
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-heading font-semibold uppercase tracking-wider
-           rounded-md transition-all duration-150 cursor-pointer select-none whitespace-nowrap;
+           rounded-md transition-all duration-150 cursor-pointer select-none text-center;
   }
   .btn-primary {
     @apply btn bg-field-500 text-white hover:bg-field-700 shadow-glow hover:shadow-[0_0_55px_-6px_rgba(24,83,42,0.85)];
@@ -58,8 +58,9 @@
   .label {
     @apply block font-heading uppercase tracking-wider text-[0.7rem] text-zinc-400 mb-1.5;
   }
+  /* text-base on mobile keeps iOS Safari from auto-zooming focused fields */
   .input {
-    @apply w-full bg-charcoal-900 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white
+    @apply w-full bg-charcoal-900 border border-white/10 rounded-lg px-4 py-2.5 text-base sm:text-sm text-white
            placeholder:text-zinc-500 outline-none focus:border-field-500 focus:ring-1 focus:ring-field-500 transition;
   }
 

@@ -38,7 +38,7 @@ export default function Signup() {
     return (
       <AuthShell title="You're In!" subtitle="Save this 6-digit PIN — it's how you'll sign in.">
         <div className="text-center">
-          <div className="display text-field-400 text-5xl tracking-[0.3em] py-6">{pin}</div>
+          <div className="display text-field-400 text-4xl sm:text-5xl tracking-[0.2em] sm:tracking-[0.3em] py-6">{pin}</div>
           <p className="text-sm text-zinc-400 mb-6">Write it down somewhere safe. You'll use your phone number + this PIN to log in.</p>
           <Button to="/my-account/login" size="lg" className="w-full">Continue to Login</Button>
         </div>
