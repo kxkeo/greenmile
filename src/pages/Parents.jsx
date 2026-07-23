@@ -474,8 +474,8 @@ function DonateModal({ dinner, onClose, onDonated }) {
 
           {editing && (
             <button type="button" onClick={remove} disabled={busy}
-              className="w-full text-center text-xs text-zinc-500 hover:text-red-300 transition pt-1">
-              Remove my donation
+              className="w-full font-heading uppercase tracking-[0.12em] text-xs font-bold text-red-300 border border-red-500/50 hover:bg-red-500/15 hover:text-red-200 transition px-6 py-3 disabled:opacity-50">
+              Remove Donation
             </button>
           )}
         </form>
