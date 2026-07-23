@@ -18,6 +18,7 @@ import SponsorDetail from './pages/SponsorDetail'
 import Donate from './pages/Donate'
 import DonateCheckout from './pages/DonateCheckout'
 import Shop from './pages/Shop'
+import Unsubscribe from './pages/Unsubscribe'
 import NotFound from './pages/NotFound'
 
 // Account
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/donate" element={<Donate />} />
             <Route path="/donate/checkout" element={<DonateCheckout />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
 
             {/* Participant account */}
             <Route path="/my-account/login" element={<Login />} />

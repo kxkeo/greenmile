@@ -70,6 +70,7 @@ export async function onRequest(context) {
     '/api/campaigns',
     '/api/players/active-roster',
     '/api/season-calendar',
+    '/api/unsubscribe',
     // Store public
     '/api/store/products',
     '/api/store/shipping-rate',
@@ -154,6 +155,7 @@ export async function onRequest(context) {
           '/api/admin/participants',
           '/api/admin/event-logs',
           '/api/admin/crm',
+          '/api/admin/send-promo',
         ]
         if (adminOnlyAdminPaths.some(p => url.pathname === p || url.pathname.startsWith(p + '/'))) {
           return unauth('Admin access required')

@@ -14,12 +14,14 @@ const cap = s => clean(s).replace(/\b\w/g, c => c.toUpperCase())
 
 export async function onRequestGet({ env }) {
   try {
-    const [parts, dons, regs, camps] = await Promise.all([
+    const [parts, dons, regs, camps, unsubs] = await Promise.all([
       env.DB.prepare(`SELECT first_name, last_name, email, phone, newsletter, created_at FROM participants`).all(),
       env.DB.prepare(`SELECT first_name, last_name, email, amount_cents, tier_label, notes, email_opt_in, created_at FROM donations WHERE payment_status != 'refunded'`).all(),
       env.DB.prepare(`SELECT first_name, last_name, email, phone, campaign_id, total_cents, email_opt_in, created_at FROM event_registrations WHERE payment_status != 'refunded'`).all(),
       env.DB.prepare(`SELECT id, title, meta FROM campaigns`).all(),
+      env.DB.prepare(`SELECT email FROM email_unsubscribes`).all(),
     ])
+    const optedOut = new Set((unsubs.results || []).map(r => (r.email || '').toLowerCase()))
 
     // Which campaigns are Country Nights (ticket + raffle)?
     const cnIds = new Set()
@@ -75,13 +77,20 @@ export async function onRequestGet({ env }) {
     }
 
     const contacts = [...map.values()]
-      .map(c => ({ ...c, name: cap(c.name), tags: [...c.tags] }))
+      .map(c => {
+        const unsubscribed = !!c.email && optedOut.has(c.email)
+        return {
+          ...c, name: cap(c.name), tags: [...c.tags], unsubscribed,
+          subscribed: c.optIn && !!c.email && !unsubscribed,
+        }
+      })
       .sort((a, b) => (b.lastActivity || '').localeCompare(a.lastActivity || ''))
 
     const has = (c, t) => c.tags.includes(t)
     const summary = {
       total:         contacts.length,
-      subscribed:    contacts.filter(c => c.optIn && c.email).length,
+      subscribed:    contacts.filter(c => c.subscribed).length,
+      unsubscribed:  contacts.filter(c => c.unsubscribed).length,
       accounts:      contacts.filter(c => has(c, 'Account')).length,
       donors:        contacts.filter(c => has(c, 'Donor')).length,
       sponsors:      contacts.filter(c => has(c, 'Sponsor')).length,

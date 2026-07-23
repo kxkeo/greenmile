@@ -535,6 +535,102 @@ function csvDownload(filename, contacts) {
   URL.revokeObjectURL(url)
 }
 
+function PromoComposer({ subscribedCount }) {
+  const [open, setOpen] = useState(false)
+  const [f, setF] = useState({ subject: '', heading: '', message: '', ctaLabel: '', ctaUrl: '', testTo: '' })
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState(null)
+  const [confirm, setConfirm] = useState(false)
+  const set = k => e => setF(s => ({ ...s, [k]: e.target.value }))
+
+  const post = async (payload, kind) => {
+    setBusy(kind); setMsg(null)
+    try {
+      const res = await fetch('/api/admin/send-promo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Send failed')
+      if (data.test) setMsg({ ok: true, text: `Test sent to ${data.to}.` })
+      else setMsg({ ok: true, text: `Sent to ${data.sent} of ${data.total} subscribers${data.failed ? ` · ${data.failed} failed` : ''}${data.truncated ? ` · ${data.truncated} not sent (over cap)` : ''}.` })
+      setConfirm(false)
+    } catch (e) { setMsg({ ok: false, text: e.message }) } finally { setBusy('') }
+  }
+
+  const base = () => ({ subject: f.subject.trim(), heading: f.heading.trim(), message: f.message.trim(), ctaLabel: f.ctaLabel.trim(), ctaUrl: f.ctaUrl.trim() })
+
+  return (
+    <div className="card p-5">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between">
+        <span className="font-heading uppercase tracking-wide text-white">✉️ Send a Promo Email</span>
+        <span className="text-zinc-500 text-sm">{open ? 'Hide' : `Compose · ${subscribedCount} subscribed`}</span>
+      </button>
+
+      {open && (
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="label">Subject</label>
+            <input className="input" value={f.subject} onChange={set('subject')} placeholder="Country Nights tickets are on sale!" />
+          </div>
+          <div>
+            <label className="label">Headline <span className="text-zinc-600 normal-case">(banner)</span></label>
+            <input className="input" value={f.heading} onChange={set('heading')} placeholder="Country Nights 2026" />
+          </div>
+          <div>
+            <label className="label">Message</label>
+            <textarea className="input min-h-[140px]" value={f.message} onChange={set('message')}
+              placeholder={"Hey Emperor family,\n\nTickets for Country Nights are live…"} />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="label">Button label <span className="text-zinc-600 normal-case">(optional)</span></label>
+              <input className="input" value={f.ctaLabel} onChange={set('ctaLabel')} placeholder="Get Tickets" />
+            </div>
+            <div>
+              <label className="label">Button link <span className="text-zinc-600 normal-case">(optional)</span></label>
+              <input className="input" value={f.ctaUrl} onChange={set('ctaUrl')} placeholder="https://greenmileboosters.org/events/country-nights" />
+            </div>
+          </div>
+
+          {msg && (
+            <div className={`rounded-lg text-sm px-4 py-3 border ${msg.ok
+              ? 'bg-field-900/40 border-field-500/30 text-field-300'
+              : 'bg-red-500/10 border-red-500/30 text-red-300'}`}>{msg.text}</div>
+          )}
+
+          <div className="flex flex-wrap items-end gap-2 pt-1">
+            <div className="flex-1 min-w-[200px]">
+              <label className="label">Send a test to</label>
+              <input className="input" value={f.testTo} onChange={set('testTo')} placeholder="you@email.com" />
+            </div>
+            <Button size="md" variant="outline" disabled={busy !== ''} onClick={() => post({ ...base(), test: true, testTo: f.testTo.trim() }, 'test')}>
+              {busy === 'test' ? 'Sending…' : 'Send Test'}
+            </Button>
+          </div>
+
+          {!confirm ? (
+            <Button size="md" className="w-full" disabled={busy !== ''} onClick={() => { setMsg(null); setConfirm(true) }}>
+              Send to {subscribedCount} Subscriber{subscribedCount === 1 ? '' : 's'}
+            </Button>
+          ) : (
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+              <p className="text-sm text-amber-200">Send this promo to <strong>{subscribedCount}</strong> subscribed {subscribedCount === 1 ? 'contact' : 'contacts'}? This can't be undone.</p>
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" variant="outline" onClick={() => setConfirm(false)} disabled={busy !== ''}>Cancel</Button>
+                <Button size="sm" onClick={() => post({ ...base() }, 'send')} disabled={busy !== ''}>
+                  {busy === 'send' ? 'Sending…' : 'Yes, send it'}
+                </Button>
+              </div>
+            </div>
+          )}
+          <p className="text-xs text-zinc-600">Every promo includes a one-click unsubscribe link. Unsubscribed contacts are never included.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CommunicationsSection() {
   const { loading, data } = useData('/api/admin/crm')
   const [q, setQ] = useState('')
@@ -546,7 +642,7 @@ function CommunicationsSection() {
 
   const matchFilter = c =>
     filter === 'all' ? true
-    : filter === 'subscribed' ? (c.optIn && c.email)
+    : filter === 'subscribed' ? c.subscribed
     : filter === 'donors' ? c.tags.includes('Donor')
     : filter === 'sponsors' ? c.tags.includes('Sponsor')
     : filter === 'countryNights' ? c.tags.includes('Country Nights')
@@ -563,11 +659,13 @@ function CommunicationsSection() {
     { label: 'Country Nights', value: summary.countryNights ?? 0 },
   ]
 
-  const subscribed = contacts.filter(c => c.optIn && c.email)
+  const subscribed = contacts.filter(c => c.subscribed)
 
   return (
     <div className="space-y-6">
       <StatStrip stats={STATS} />
+
+      <PromoComposer subscribedCount={subscribed.length} />
 
       <div className="flex flex-wrap items-center gap-2 justify-between">
         <div className="flex flex-wrap gap-1.5">
@@ -616,7 +714,11 @@ function CommunicationsSection() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right text-zinc-300 whitespace-nowrap">{c.totalCents ? money(c.totalCents / 100) : '—'}</td>
-                <td className="px-4 py-3 text-center">{c.optIn ? <span className="text-field-400">✓</span> : <span className="text-zinc-600">—</span>}</td>
+                <td className="px-4 py-3 text-center">
+                  {c.unsubscribed ? <span className="text-red-400 text-[0.7rem] uppercase tracking-wide">Unsub</span>
+                    : c.subscribed ? <span className="text-field-400">✓</span>
+                    : <span className="text-zinc-600">—</span>}
+                </td>
                 <td className="px-4 py-3 text-zinc-500 whitespace-nowrap">{c.lastActivity ? dateStr(c.lastActivity) : '—'}</td>
               </tr>
             ))}

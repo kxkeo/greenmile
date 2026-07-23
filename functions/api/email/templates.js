@@ -892,6 +892,44 @@ export function teamDinnerEmail({ firstName, opponent, dinnerDate, gameDate, add
   }
 }
 
+// ── Promo / Announcement Broadcast ──────────────────────────────────────────
+// Marketing email to opted-in contacts. MUST include a working unsubscribe
+// link (CAN-SPAM). `message` is plain text from the admin composer.
+export function promoEmail({ subject, heading, message, ctaLabel, ctaUrl, unsubscribeUrl }) {
+  const paras = String(message || '').trim()
+    .split(/\n{2,}/)
+    .map(p => `<p>${esc(p).replace(/\n/g, '<br/>')}</p>`)
+    .join('')
+
+  const hero = `
+    <div style="background:linear-gradient(135deg,#0f3d1e 0%,#18532a 100%);padding:30px 28px 26px;text-align:center;">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px;">🏈</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;line-height:1.2;">${esc(heading || 'Green Mile Boosters')}</div>
+    </div>`
+
+  const cta = (ctaLabel && ctaUrl)
+    ? `<a href="${esc(ctaUrl)}" class="btn">${esc(ctaLabel)}</a>`
+    : ''
+
+  const unsub = unsubscribeUrl
+    ? `<div class="divider"></div>
+       <p style="font-size:12px;color:${BASE.gray};text-align:center;line-height:1.6;">
+         You're receiving this because you opted in to updates from The Green Mile Boosters.<br/>
+         <a href="${esc(unsubscribeUrl)}" style="color:${BASE.green};">Unsubscribe from these emails</a>
+       </p>`
+    : ''
+
+  return {
+    subject: subject || 'News from The Green Mile Boosters',
+    html: wrap({
+      title: subject || 'The Green Mile Boosters',
+      preheader: (String(message || '').trim().slice(0, 120)) || 'An update from The Green Mile Boosters',
+      hero,
+      body: `${paras}${cta}${unsub}`,
+    }),
+  }
+}
+
 // ── Account Welcome / Registration Email ────────────────────────────────────
 // Sent when someone creates an email+password account with The Green Mile Boosters.
 export function accountWelcomeEmail({ firstName, email }) {
