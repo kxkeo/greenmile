@@ -17,6 +17,23 @@ export async function onRequestGet({ env }) {
        ORDER BY dinner_date ASC`
     ).all()
 
+    // Potluck donations for the manager (with ids + raw item flags/notes).
+    const { results: donRows } = await env.DB.prepare(
+      `SELECT id, dinner_id, participant_id, donor_name, food, drinks, desserts,
+              food_note, drinks_note, desserts_note
+       FROM team_dinner_donations ORDER BY created_at ASC`
+    ).all()
+    const donByDinner = {}
+    for (const d of (donRows || [])) {
+      ;(donByDinner[d.dinner_id] ||= []).push({
+        id: d.id,
+        donorName: d.donor_name,
+        isParent: d.participant_id != null,
+        food: d.food === 1, drinks: d.drinks === 1, desserts: d.desserts === 1,
+        foodNote: d.food_note || '', drinksNote: d.drinks_note || '', dessertsNote: d.desserts_note || '',
+      })
+    }
+
     const dinners = (results || []).map(r => ({
       id:           r.id,
       dinnerDate:   r.dinner_date,
@@ -31,6 +48,7 @@ export async function onRequestGet({ env }) {
       hostPhone:    r.host_phone,
       notes:        r.notes,
       bookedAt:     r.booked_at,
+      donations:    donByDinner[r.id] || [],
     }))
     return json({ dinners })
   } catch (e) {

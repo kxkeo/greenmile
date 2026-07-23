@@ -398,10 +398,89 @@ function TeamDinnersEditor() {
                   </Button>
                 )}
               </div>
+
+              <DonationManager dinner={d} reload={load} />
             </div>
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+// Admin manager for a dinner's potluck donations: add / edit / remove on a
+// parent's behalf.
+function DonationManager({ dinner, reload }) {
+  const [adding, setAdding] = useState(false)
+  const rows = dinner.donations || []
+  return (
+    <div className="mt-4 pt-3 border-t border-white/[0.06]">
+      <div className="flex items-center justify-between mb-2">
+        <span className="font-heading uppercase tracking-wider text-[0.65rem] text-zinc-500">Donations (potluck)</span>
+        {!adding && <button onClick={() => setAdding(true)} className="text-xs text-field-400 hover:text-field-300">+ Add donation</button>}
+      </div>
+      <div className="space-y-2">
+        {rows.map(don => <DonationRow key={don.id} donation={don} reload={reload} />)}
+        {adding && <DonationRow dinner={dinner} isNew onDone={() => setAdding(false)} reload={reload} />}
+        {!adding && rows.length === 0 && <p className="text-xs text-zinc-600">No donations yet.</p>}
+      </div>
+    </div>
+  )
+}
+
+function DonationRow({ donation, dinner, reload, isNew, onDone }) {
+  const [name, setName] = useState(donation?.donorName || '')
+  const [picks, setPicks] = useState({ food: donation?.food || false, drinks: donation?.drinks || false, desserts: donation?.desserts || false })
+  const [notes, setNotes] = useState({ food: donation?.foodNote || '', drinks: donation?.drinksNote || '', desserts: donation?.dessertsNote || '' })
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const toggle = k => setPicks(p => ({ ...p, [k]: !p[k] }))
+
+  const post = async (payload) => {
+    setBusy(true); setErr('')
+    try {
+      const res = await fetch('/api/admin/team-dinner-donations', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed')
+      if (onDone) onDone()
+      await reload()
+    } catch (e) { setErr(e.message); setBusy(false) }
+  }
+
+  const save = () => post({
+    action: isNew ? 'add' : 'update',
+    ...(isNew ? { dinnerId: dinner.id } : { id: donation.id }),
+    donorName: name.trim(),
+    food: picks.food, drinks: picks.drinks, desserts: picks.desserts,
+    foodNote: notes.food.trim(), drinksNote: notes.drinks.trim(), dessertsNote: notes.desserts.trim(),
+  })
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-charcoal-900/60 p-3">
+      <input className="input !py-2 text-sm" placeholder="Name (parent / family)" value={name} onChange={e => setName(e.target.value)} />
+      <div className="mt-2 space-y-1.5">
+        {[['food', '🍽️ Food', 'e.g. Tri-tip'], ['drinks', '🥤 Drinks', 'e.g. Water'], ['desserts', '🍰 Dessert', 'e.g. Brownies']].map(([k, lbl, ph]) => (
+          <div key={k} className="flex items-center gap-2">
+            <button type="button" onClick={() => toggle(k)}
+              className={`shrink-0 w-24 rounded-md border px-2 py-1.5 text-[0.7rem] font-heading uppercase tracking-wide text-center transition ${
+                picks[k] ? 'bg-field-600 border-field-500 text-white' : 'bg-charcoal-800 border-white/10 text-zinc-400 hover:border-white/25'}`}>
+              {lbl}
+            </button>
+            <input className="input !py-1.5 text-sm flex-1 disabled:opacity-40" placeholder={picks[k] ? ph : '—'}
+              value={notes[k]} onChange={e => setNotes(n => ({ ...n, [k]: e.target.value }))} disabled={!picks[k]} />
+          </div>
+        ))}
+      </div>
+      {err && <p className="text-xs text-red-300 mt-2">{err}</p>}
+      <div className="flex gap-2 mt-2">
+        <Button size="sm" onClick={save} disabled={busy}>{busy ? '…' : isNew ? 'Add' : 'Save'}</Button>
+        {isNew
+          ? <Button size="sm" variant="outline" onClick={onDone} disabled={busy}>Cancel</Button>
+          : <Button size="sm" variant="outline" onClick={() => post({ action: 'remove', id: donation.id })} disabled={busy}>Remove</Button>}
+      </div>
     </div>
   )
 }

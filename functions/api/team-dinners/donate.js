@@ -3,6 +3,8 @@
 // One pledge per parent per dinner — submitting again updates it. Requires a
 // participant session (enforced by _middleware.js; re-checked here).
 
+import { hasProfanity } from '../../_lib/profanity.js'
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status, headers: { 'Content-Type': 'application/json' }
@@ -49,6 +51,11 @@ export async function onRequestPost({ request, env }) {
   const foodNote     = food     ? clip(body.foodNote)     : null
   const drinksNote   = drinks   ? clip(body.drinksNote)   : null
   const dessertsNote = desserts ? clip(body.dessertsNote) : null
+
+  // Keep it family-friendly — this is a kid-facing school site.
+  if ([foodNote, drinksNote, dessertsNote].some(n => hasProfanity(n))) {
+    return json({ error: 'Please keep it clean for the kids — remove any inappropriate language.' }, 400)
+  }
 
   try {
     const dinner = await env.DB.prepare(

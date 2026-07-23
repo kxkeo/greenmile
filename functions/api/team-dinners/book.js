@@ -5,6 +5,7 @@
 
 import { sendEmail } from '../email/send.js'
 import { teamDinnerEmail } from '../email/templates.js'
+import { hasProfanity } from '../../_lib/profanity.js'
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -35,6 +36,9 @@ export async function onRequestPost({ request, env }) {
   const hostOverride = (body.hostNames || '').toString().trim().slice(0, 200) || null
   const notes        = (body.notes || '').toString().trim().slice(0, 1000) || null
   if (!address) return json({ error: 'Please add the address where the dinner will be held.' }, 400)
+  if (hasProfanity(notes)) {
+    return json({ error: 'Please keep it clean for the kids — remove any inappropriate language.' }, 400)
+  }
 
   try {
     // Pull the participant's profile for the host name + contact info.
