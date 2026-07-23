@@ -63,6 +63,7 @@ function CheckoutForm({ campaign, me }) {
     firstName: me.firstName || '', lastName: me.lastName || '',
     email: me.email || '', phone: me.phone || '',
     address: '', city: '', state: 'CA', zip: '',
+    emailOptIn: true,
   })
   const [payAtEvent, setPayAtEvent] = useState(!STRIPE_READY)
   const [clientSecret, setClientSecret] = useState(null)
@@ -172,6 +173,13 @@ function CheckoutForm({ campaign, me }) {
           <Field label="State"><input className="input" value={form.state} onChange={set('state')} required /></Field>
           <Field label="ZIP"><input className="input" value={form.zip} onChange={set('zip')} required inputMode="numeric" /></Field>
         </div>
+
+        <label className="flex items-start gap-3 rounded-xl bg-charcoal-900 border border-white/[0.07] px-4 py-3 cursor-pointer">
+          <input type="checkbox" checked={form.emailOptIn}
+            onChange={e => setForm(f => ({ ...f, emailOptIn: e.target.checked }))}
+            className="accent-field-500 w-4 h-4 mt-0.5 shrink-0" />
+          <span className="text-sm text-zinc-300">Keep me in the loop — email me about future Green Mile Boosters events and promotions.</span>
+        </label>
 
         {/* Payment */}
         {STRIPE_READY ? (

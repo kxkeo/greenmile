@@ -26,7 +26,7 @@ export async function onRequestPost({ request, env }) {
   let body
   try { body = await request.json() } catch { return json({ error: 'Invalid JSON' }, 400) }
 
-  const { campaignId, firstName, lastName, email, phone, address, city, state, zip, ticketQty, shirtSize, gradYear, positions, gameType, totalCents, payAtEvent, referredPlayerId } = body
+  const { campaignId, firstName, lastName, email, phone, address, city, state, zip, ticketQty, shirtSize, gradYear, positions, gameType, totalCents, payAtEvent, referredPlayerId, emailOptIn } = body
   // Accept both camelCase (new) and snake_case (legacy) payment intent field names
   const paymentIntentId = body.paymentIntentId || body.stripe_payment_intent || null
 
@@ -99,8 +99,8 @@ export async function onRequestPost({ request, env }) {
       INSERT INTO event_registrations
         (campaign_id, participant_id, first_name, last_name, email, phone,
          address, city, state, zip, ticket_qty, total_cents, shirt_size,
-         grad_year, positions, game_type, payment_status, stripe_session, referred_player_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         grad_year, positions, game_type, payment_status, stripe_session, referred_player_id, email_opt_in)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       campaignId, participantId,
       firstName.trim(), lastName.trim(),
@@ -114,7 +114,8 @@ export async function onRequestPost({ request, env }) {
       gameType || null,
       paymentStatus,
       stripeRef,
-      referredPlayerId ? parseInt(referredPlayerId, 10) : null
+      referredPlayerId ? parseInt(referredPlayerId, 10) : null,
+      emailOptIn ? 1 : 0
     ).run()
 
     // Send confirmation email if email provided. Country Nights (kind:'ticket')

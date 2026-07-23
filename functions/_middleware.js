@@ -153,6 +153,7 @@ export async function onRequest(context) {
           '/api/admin/campaigns',
           '/api/admin/participants',
           '/api/admin/event-logs',
+          '/api/admin/crm',
         ]
         if (adminOnlyAdminPaths.some(p => url.pathname === p || url.pathname.startsWith(p + '/'))) {
           return unauth('Admin access required')

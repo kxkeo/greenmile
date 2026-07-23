@@ -14,17 +14,33 @@ const money = c => `$${(Number(c) || 0).toLocaleString('en-US', { maximumFractio
 const dateStr = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const fullName = (f, l) => `${f || ''} ${l || ''}`.trim() || '—'
 
+// White (currentColor) line icons for the admin side nav.
+const svg = (paths) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+    strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 shrink-0">{paths}</svg>
+)
+const NAV_ICON = {
+  dashboard:      svg(<><rect x="3" y="3" width="7" height="9" rx="1" /><rect x="14" y="3" width="7" height="5" rx="1" /><rect x="14" y="12" width="7" height="9" rx="1" /><rect x="3" y="16" width="7" height="5" rx="1" /></>),
+  events:         svg(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></>),
+  registrations:  svg(<><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4Z" /><path d="M14 6v12" /></>),
+  purchases:      svg(<><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></>),
+  communications: svg(<><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>),
+  users:          svg(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" /></>),
+  settings:       svg(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" /></>),
+}
+
 const SECTIONS = [
-  { key: 'dashboard',     label: 'Dashboard',       icon: '📊' },
-  { key: 'events',        label: 'Events',          icon: '📅' },
-  { key: 'registrations', label: 'Registrations',   icon: '🎟️' },
-  { key: 'purchases',     label: 'Purchases',       icon: '💳' },
-  { key: 'users',         label: 'User Management', icon: '👥' },
-  { key: 'settings',      label: 'Settings',        icon: '⚙️' },
+  { key: 'dashboard',      label: 'Dashboard' },
+  { key: 'events',         label: 'Events' },
+  { key: 'registrations',  label: 'Registrations' },
+  { key: 'purchases',      label: 'Purchases' },
+  { key: 'communications', label: 'Communications' },
+  { key: 'users',          label: 'User Management' },
+  { key: 'settings',       label: 'Settings' },
 ]
 const TITLES = {
   dashboard: 'Program Overview', events: 'Events', registrations: 'Registrations',
-  purchases: 'Purchases', users: 'User Management', settings: 'Settings',
+  purchases: 'Purchases', communications: 'Communications', users: 'User Management', settings: 'Settings',
 }
 
 export default function AdminDashboard() {
@@ -66,7 +82,7 @@ export default function AdminDashboard() {
                 section === s.key ? 'bg-field-500 text-white' : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'
               }`}
             >
-              <span className="text-base leading-none">{s.icon}</span>{s.label}
+              {NAV_ICON[s.key]}{s.label}
             </button>
           ))}
           <div className="hidden lg:block border-t border-white/[0.07] mt-2 pt-3">
@@ -80,6 +96,7 @@ export default function AdminDashboard() {
           {section === 'events'        && <EventsSection />}
           {section === 'registrations' && <RegistrationsSection />}
           {section === 'purchases'     && <PurchasesSection />}
+          {section === 'communications' && <CommunicationsSection />}
           {section === 'users'         && <UsersSection />}
           {section === 'settings'      && <SettingsPanel />}
 
@@ -481,6 +498,136 @@ function DonationRow({ donation, dinner, reload, isNew, onDone }) {
           ? <Button size="sm" variant="outline" onClick={onDone} disabled={busy}>Cancel</Button>
           : <Button size="sm" variant="outline" onClick={() => post({ action: 'remove', id: donation.id })} disabled={busy}>Remove</Button>}
       </div>
+    </div>
+  )
+}
+
+// ── Communications / CRM ─────────────────────────────────────────────────────
+const TAG_STYLE = {
+  Account:          'bg-white/10 text-zinc-300',
+  Donor:            'bg-field-500/20 text-field-300',
+  Sponsor:          'bg-amber-500/20 text-amber-300',
+  'Country Nights': 'bg-emerald-500/20 text-emerald-300',
+  Event:            'bg-sky-500/20 text-sky-300',
+}
+const CRM_FILTERS = [
+  { key: 'all',           label: 'All' },
+  { key: 'subscribed',    label: 'Subscribed' },
+  { key: 'donors',        label: 'Donors' },
+  { key: 'sponsors',      label: 'Sponsors' },
+  { key: 'countryNights', label: 'Country Nights' },
+  { key: 'accounts',      label: 'Accounts' },
+]
+
+function csvDownload(filename, contacts) {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const header = ['Name', 'Email', 'Phone', 'Roles', 'Total Given', 'Email Opt-In', 'Last Activity']
+  const lines = [header.map(q).join(',')]
+  for (const c of contacts) {
+    lines.push([c.name, c.email, c.phone, c.tags.join(' / '),
+      (c.totalCents / 100).toFixed(2), c.optIn ? 'Yes' : 'No',
+      c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('en-US') : ''].map(q).join(','))
+  }
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename; a.click()
+  URL.revokeObjectURL(url)
+}
+
+function CommunicationsSection() {
+  const { loading, data } = useData('/api/admin/crm')
+  const [q, setQ] = useState('')
+  const [filter, setFilter] = useState('all')
+
+  if (loading) return <Loading label="Loading contacts…" />
+  const summary = data?.summary || {}
+  const contacts = Array.isArray(data?.contacts) ? data.contacts : []
+
+  const matchFilter = c =>
+    filter === 'all' ? true
+    : filter === 'subscribed' ? (c.optIn && c.email)
+    : filter === 'donors' ? c.tags.includes('Donor')
+    : filter === 'sponsors' ? c.tags.includes('Sponsor')
+    : filter === 'countryNights' ? c.tags.includes('Country Nights')
+    : filter === 'accounts' ? c.tags.includes('Account')
+    : true
+  const needle = q.trim().toLowerCase()
+  const rows = contacts.filter(c => matchFilter(c) &&
+    (!needle || c.name.toLowerCase().includes(needle) || c.email.includes(needle) || c.phone.includes(needle)))
+
+  const STATS = [
+    { label: 'Contacts', value: summary.total ?? 0 },
+    { label: 'Subscribed', value: summary.subscribed ?? 0 },
+    { label: 'Donors + Sponsors', value: (summary.donors ?? 0) + (summary.sponsors ?? 0) },
+    { label: 'Country Nights', value: summary.countryNights ?? 0 },
+  ]
+
+  const subscribed = contacts.filter(c => c.optIn && c.email)
+
+  return (
+    <div className="space-y-6">
+      <StatStrip stats={STATS} />
+
+      <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {CRM_FILTERS.map(f => (
+            <button key={f.key} onClick={() => setFilter(f.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-heading uppercase tracking-wide transition ${
+                filter === f.key ? 'bg-field-500 text-white' : 'bg-white/[0.04] text-zinc-400 hover:text-white'}`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => csvDownload('subscribed-emails.csv', subscribed)}
+            disabled={!subscribed.length}>Export Subscribed ({subscribed.length})</Button>
+          <Button size="sm" onClick={() => csvDownload('contacts.csv', rows)} disabled={!rows.length}>Export CSV</Button>
+        </div>
+      </div>
+
+      <input className="input" placeholder="Search name, email, or phone…" value={q} onChange={e => setQ(e.target.value)} />
+
+      <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
+        <table className="w-full text-sm min-w-[720px]">
+          <thead>
+            <tr className="text-left text-[0.7rem] uppercase tracking-wider text-zinc-500 border-b border-white/[0.06]">
+              <th className="px-4 py-3 font-heading">Name</th>
+              <th className="px-4 py-3 font-heading">Contact</th>
+              <th className="px-4 py-3 font-heading">Roles</th>
+              <th className="px-4 py-3 font-heading text-right">Given</th>
+              <th className="px-4 py-3 font-heading text-center">Opt-In</th>
+              <th className="px-4 py-3 font-heading">Last</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((c, i) => (
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
+                <td className="px-4 py-3 text-white whitespace-nowrap">{c.name}</td>
+                <td className="px-4 py-3 text-zinc-400">
+                  <div>{c.email || <span className="text-zinc-600">no email</span>}</div>
+                  {c.phone && <div className="text-xs text-zinc-500">{c.phone}</div>}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {c.tags.map(t => (
+                      <span key={t} className={`px-2 py-0.5 rounded text-[0.65rem] font-heading uppercase tracking-wide ${TAG_STYLE[t] || 'bg-white/10 text-zinc-300'}`}>{t}</span>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right text-zinc-300 whitespace-nowrap">{c.totalCents ? money(c.totalCents / 100) : '—'}</td>
+                <td className="px-4 py-3 text-center">{c.optIn ? <span className="text-field-400">✓</span> : <span className="text-zinc-600">—</span>}</td>
+                <td className="px-4 py-3 text-zinc-500 whitespace-nowrap">{c.lastActivity ? dateStr(c.lastActivity) : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.length === 0 && <div className="px-4 py-10 text-center text-sm text-zinc-500">No contacts match.</div>}
+      </div>
+
+      <p className="text-xs text-zinc-600">
+        Only contacts who checked the email opt-in (or account newsletter) count as Subscribed. Export the subscribed list to send promos through your email tool.
+      </p>
     </div>
   )
 }

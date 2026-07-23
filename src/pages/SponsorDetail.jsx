@@ -14,7 +14,7 @@ export default function SponsorDetail() {
   const tier = findTier(slug)
   if (!tier) return <Navigate to="/sponsors" replace />
 
-  const [form, setForm] = useState({ business: '', firstName: '', lastName: '', email: '', phone: '' })
+  const [form, setForm] = useState({ business: '', firstName: '', lastName: '', email: '', phone: '', emailOptIn: true })
   const [clientSecret, setClientSecret] = useState(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -60,6 +60,7 @@ export default function SponsorDetail() {
         tierLabel: tier.name,
         notes: `Sponsorship — ${form.business.trim()}${form.phone.trim() ? ` · ${form.phone.trim()}` : ''}`,
         wantReceipt: true,
+        emailOptIn: form.emailOptIn,
         paymentIntentId,
       }),
     })
@@ -156,6 +157,13 @@ export default function SponsorDetail() {
               <input className="input" value={form.phone} onChange={set('phone')} placeholder="(559) 555-1234" />
             </div>
           </div>
+
+          <label className="mt-4 flex items-start gap-3 rounded-xl bg-charcoal-900 border border-white/[0.07] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.emailOptIn}
+              onChange={e => setForm(f => ({ ...f, emailOptIn: e.target.checked }))}
+              className="accent-field-500 w-4 h-4 mt-0.5 shrink-0" />
+            <span className="text-sm text-zinc-300">Email me about future Green Mile Boosters events, promotions, and sponsor opportunities.</span>
+          </label>
 
           {error && <div className="mt-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
 

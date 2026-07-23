@@ -12,7 +12,7 @@ export default function DonateCheckout() {
   const amount = Math.max(0, parseInt(params.get('amount'), 10) || 0)
   const amountCents = amount * 100
 
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', emailOptIn: true })
   const [clientSecret, setClientSecret] = useState(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -55,6 +55,7 @@ export default function DonateCheckout() {
         email: form.email.trim(),
         amount,
         wantReceipt: true,
+        emailOptIn: form.emailOptIn,
         paymentIntentId,
       }),
     })
@@ -117,6 +118,13 @@ export default function DonateCheckout() {
             <label className="label">Email (for your receipt)</label>
             <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="you@email.com" required />
           </div>
+
+          <label className="mt-4 flex items-start gap-3 rounded-xl bg-charcoal-900 border border-white/[0.07] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.emailOptIn}
+              onChange={e => setForm(f => ({ ...f, emailOptIn: e.target.checked }))}
+              className="accent-field-500 w-4 h-4 mt-0.5 shrink-0" />
+            <span className="text-sm text-zinc-300">Email me about future Green Mile Boosters events and promotions.</span>
+          </label>
 
           {error && <div className="mt-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
 
