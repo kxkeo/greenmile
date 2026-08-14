@@ -87,7 +87,7 @@ export default function DonateCheckout() {
           <h1 className="display text-white text-4xl">Thank You!</h1>
           <div className="display text-field-400 text-4xl my-4">{fmtUSD(amountCents)}</div>
           <p className="text-sm text-zinc-400">
-            Your gift to Emperor football is in — a receipt is on its way to{' '}
+            Your donation to Emperor football is in — a receipt is on its way to{' '}
             <span className="text-zinc-200">{form.email.trim()}</span>. This is what a small town
             taking care of its kids looks like. Go Emperors!
           </p>
@@ -103,7 +103,7 @@ export default function DonateCheckout() {
   return (
     <Shell>
       <Eyebrow className="mb-2">Secure Checkout</Eyebrow>
-      <h1 className="display text-white text-4xl">Your Gift</h1>
+      <h1 className="display text-white text-4xl">Your Donation</h1>
 
       <div className="mt-6 flex items-center justify-between rounded-xl bg-charcoal-900 border border-white/[0.07] px-6 py-5">
         <span className="font-heading uppercase tracking-wide text-zinc-300">Donation</span>

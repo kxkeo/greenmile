@@ -19,7 +19,7 @@ export default function Donate() {
         image={IMG.gear}
         eyebrow="Back the Emperors"
         title="Donate"
-        subtitle="Every gift goes straight to our kids — gear, meals, travel, and scholarships. No red tape, 100% community powered. That's the Dinuba way."
+        subtitle="Every donation goes straight to our kids — gear, meals, travel, and scholarships. No red tape, 100% community powered. That's the Dinuba way."
         minH="min-h-[56vh]"
       />
 
