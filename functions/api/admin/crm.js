@@ -16,7 +16,9 @@ export async function onRequestGet({ env }) {
   try {
     const [parts, dons, regs, camps, unsubs] = await Promise.all([
       env.DB.prepare(`SELECT first_name, last_name, email, phone, newsletter, created_at FROM participants`).all(),
-      env.DB.prepare(`SELECT first_name, last_name, email, amount_cents, tier_label, notes, email_opt_in, created_at FROM donations WHERE payment_status != 'refunded'`).all(),
+      // SELECT * so this keeps working whether or not migration 037
+      // (organization/phone) has been applied yet.
+      env.DB.prepare(`SELECT * FROM donations WHERE payment_status != 'refunded'`).all(),
       env.DB.prepare(`SELECT first_name, last_name, email, phone, campaign_id, total_cents, email_opt_in, created_at FROM event_registrations WHERE payment_status != 'refunded'`).all(),
       env.DB.prepare(`SELECT id, title, meta FROM campaigns`).all(),
       env.DB.prepare(`SELECT email FROM email_unsubscribes`).all(),
@@ -39,7 +41,7 @@ export async function onRequestGet({ env }) {
       const k = keyFor(email, name, phone)
       let c = map.get(k)
       if (!c) {
-        c = { name, email: lower(email) || '', phone: clean(phone), tags: new Set(),
+        c = { name, email: lower(email) || '', phone: clean(phone), org: '', tags: new Set(),
               totalCents: 0, optIn: false, lastActivity: null }
         map.set(k, c)
       }
@@ -60,7 +62,8 @@ export async function onRequestGet({ env }) {
     }
     // Donations & sponsorships
     for (const d of (dons.results || [])) {
-      const c = get(d.email, d.first_name, d.last_name, null)
+      const c = get(d.email, d.first_name, d.last_name, d.phone)
+      if (!c.org && d.organization) c.org = clean(d.organization)
       const isSponsor = /sponsor/i.test(d.tier_label || '') || /^sponsorship/i.test(d.notes || '')
       c.tags.add(isSponsor ? 'Sponsor' : 'Donor')
       c.totalCents += (parseInt(d.amount_cents, 10) || 0)

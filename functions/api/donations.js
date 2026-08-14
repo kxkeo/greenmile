@@ -62,7 +62,7 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Invalid JSON' }, 400)
   }
 
-  const { firstName, lastName, email, amount, tierId, tierLabel, wantReceipt, referredPlayerId, address, city, state, zip, notes, emailOptIn } = body
+  const { firstName, lastName, email, amount, tierId, tierLabel, wantReceipt, referredPlayerId, address, city, state, zip, notes, emailOptIn, organization, phone } = body
   const paymentIntentId = body.paymentIntentId || body.stripe_payment_intent || null
 
   if (!firstName?.trim()) return json({ error: 'First name required' }, 400)
@@ -103,13 +103,33 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  const orgClean   = organization?.trim() || null
+  const phoneClean = phone?.trim() || null
+
   try {
-    const row = await env.DB.prepare(`
-      INSERT INTO donations
-        (first_name, last_name, email, amount_cents, tier_id, tier_label, want_receipt, payment_status, referred_player_id, address, city, state, zip, notes, email_opt_in, stripe_payment_intent)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?, ?, ?, ?)
-      RETURNING id
-    `).bind(
+    // `organization` and `phone` arrived in migration 037. Check which columns
+    // this database actually has so the endpoint works before and after the
+    // migration is applied — until then those values ride along in `notes`.
+    let hasOrg = false, hasPhone = false
+    try {
+      const { results: cols } = await env.DB.prepare(`PRAGMA table_info(donations)`).all()
+      const names = new Set((cols || []).map(c => c.name))
+      hasOrg   = names.has('organization')
+      hasPhone = names.has('phone')
+    } catch { /* assume legacy schema */ }
+
+    // Anything we can't store in its own column gets appended to notes so the
+    // info is never silently dropped.
+    const extras = [
+      !hasOrg   && orgClean   ? `Company: ${orgClean}`  : null,
+      !hasPhone && phoneClean ? `Phone: ${phoneClean}`  : null,
+    ].filter(Boolean)
+    const notesFinal = [notes?.trim() || null, ...extras].filter(Boolean).join(' · ') || null
+
+    const cols = ['first_name', 'last_name', 'email', 'amount_cents', 'tier_id', 'tier_label',
+      'want_receipt', 'referred_player_id', 'address', 'city', 'state', 'zip', 'notes',
+      'email_opt_in', 'stripe_payment_intent']
+    const vals = [
       firstName.trim(),
       lastName.trim(),
       email?.trim().toLowerCase() || null,
@@ -122,10 +142,19 @@ export async function onRequestPost({ request, env }) {
       city?.trim() || null,
       state?.trim() || null,
       zip?.trim() || null,
-      notes?.trim() || null,
+      notesFinal,
       emailOptIn ? 1 : 0,
       paymentIntentId || null,
-    ).first()
+    ]
+    if (hasOrg)   { cols.push('organization'); vals.push(orgClean) }
+    if (hasPhone) { cols.push('phone');        vals.push(phoneClean) }
+
+    const placeholders = cols.map(() => '?').join(', ')
+    const row = await env.DB.prepare(
+      `INSERT INTO donations (${cols.join(', ')}, payment_status)
+       VALUES (${placeholders}, 'received')
+       RETURNING id`
+    ).bind(...vals).first()
 
     // Send acknowledgment email if email provided
     const emailTo = email?.trim().toLowerCase()

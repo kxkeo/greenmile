@@ -521,10 +521,10 @@ const CRM_FILTERS = [
 
 function csvDownload(filename, contacts) {
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`
-  const header = ['Name', 'Email', 'Phone', 'Roles', 'Total Given', 'Email Opt-In', 'Last Activity']
+  const header = ['Name', 'Company/Org', 'Email', 'Phone', 'Roles', 'Total Given', 'Email Opt-In', 'Last Activity']
   const lines = [header.map(q).join(',')]
   for (const c of contacts) {
-    lines.push([c.name, c.email, c.phone, c.tags.join(' / '),
+    lines.push([c.name, c.org || '', c.email, c.phone, c.tags.join(' / '),
       (c.totalCents / 100).toFixed(2), c.optIn ? 'Yes' : 'No',
       c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('en-US') : ''].map(q).join(','))
   }
@@ -650,7 +650,8 @@ function CommunicationsSection() {
     : true
   const needle = q.trim().toLowerCase()
   const rows = contacts.filter(c => matchFilter(c) &&
-    (!needle || c.name.toLowerCase().includes(needle) || c.email.includes(needle) || c.phone.includes(needle)))
+    (!needle || c.name.toLowerCase().includes(needle) || (c.org || '').toLowerCase().includes(needle)
+      || c.email.includes(needle) || c.phone.includes(needle)))
 
   const STATS = [
     { label: 'Contacts', value: summary.total ?? 0 },
@@ -684,7 +685,7 @@ function CommunicationsSection() {
         </div>
       </div>
 
-      <input className="input" placeholder="Search name, email, or phone…" value={q} onChange={e => setQ(e.target.value)} />
+      <input className="input" placeholder="Search name, company, email, or phone…" value={q} onChange={e => setQ(e.target.value)} />
 
       <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
         <table className="w-full text-sm min-w-[720px]">
@@ -701,7 +702,10 @@ function CommunicationsSection() {
           <tbody>
             {rows.map((c, i) => (
               <tr key={i} className="border-b border-white/[0.04] last:border-0">
-                <td className="px-4 py-3 text-white whitespace-nowrap">{c.name}</td>
+                <td className="px-4 py-3 text-white whitespace-nowrap">
+                  <div>{c.name}</div>
+                  {c.org && <div className="text-xs text-zinc-500">{c.org}</div>}
+                </td>
                 <td className="px-4 py-3 text-zinc-400">
                   <div>{c.email || <span className="text-zinc-600">no email</span>}</div>
                   {c.phone && <div className="text-xs text-zinc-500">{c.phone}</div>}

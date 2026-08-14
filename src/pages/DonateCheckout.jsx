@@ -12,15 +12,22 @@ export default function DonateCheckout() {
   const amount = Math.max(0, parseInt(params.get('amount'), 10) || 0)
   const amountCents = amount * 100
 
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', emailOptIn: true })
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', organization: '', email: '', phone: '',
+    address: '', city: '', state: 'CA', zip: '', emailOptIn: true,
+  })
   const [clientSecret, setClientSecret] = useState(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
+  // Company/organization is optional (individual donors won't have one);
+  // everything else is required so receipts and thank-yous can actually be sent.
   const detailsValid = form.firstName.trim() && form.lastName.trim()
     && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+    && form.phone.trim() && form.address.trim() && form.city.trim()
+    && form.state.trim() && form.zip.trim()
 
   // Create the PaymentIntent once the donor details are filled in.
   useEffect(() => {
@@ -34,6 +41,7 @@ export default function DonateCheckout() {
         amountCents,
         email: form.email.trim(),
         name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+        business: form.organization.trim() || undefined,
         kind: 'donation',
         description: `Green Mile Boosters donation — $${amount}`,
       }),
@@ -43,7 +51,7 @@ export default function DonateCheckout() {
       .catch(() => { if (!cancelled) setError('Could not start payment. Please try again.') })
       .finally(() => { if (!cancelled) setCreating(false) })
     return () => { cancelled = true }
-  }, [amountCents, detailsValid, form.email, form.firstName, form.lastName])
+  }, [amountCents, detailsValid, form.email, form.firstName, form.lastName, form.organization])
 
   const recordDonation = async paymentIntentId => {
     const res = await fetch('/api/donations', {
@@ -52,7 +60,13 @@ export default function DonateCheckout() {
       body: JSON.stringify({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
+        organization: form.organization.trim(),
         email: form.email.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        city: form.city.trim(),
+        state: form.state.trim(),
+        zip: form.zip.trim(),
         amount,
         wantReceipt: true,
         emailOptIn: form.emailOptIn,
@@ -115,8 +129,36 @@ export default function DonateCheckout() {
             </div>
           </div>
           <div className="mt-4">
-            <label className="label">Email (for your receipt)</label>
-            <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="you@email.com" required />
+            <label className="label">Company or Organization <span className="text-zinc-600 normal-case">(optional)</span></label>
+            <input className="input" value={form.organization} onChange={set('organization')} placeholder="Business, church, or group name" />
+          </div>
+          <div className="mt-4 grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Email (for your receipt)</label>
+              <input className="input" type="email" value={form.email} onChange={set('email')} placeholder="you@email.com" required />
+            </div>
+            <div>
+              <label className="label">Phone</label>
+              <input className="input" value={form.phone} onChange={set('phone')} placeholder="(559) 555-1234" required />
+            </div>
+          </div>
+          <div className="mt-4">
+            <label className="label">Address</label>
+            <input className="input" value={form.address} onChange={set('address')} placeholder="123 Main St" required />
+          </div>
+          <div className="mt-4 grid grid-cols-[2fr_1fr_1fr] gap-3">
+            <div>
+              <label className="label">City</label>
+              <input className="input" value={form.city} onChange={set('city')} required />
+            </div>
+            <div>
+              <label className="label">State</label>
+              <input className="input" value={form.state} onChange={set('state')} required />
+            </div>
+            <div>
+              <label className="label">ZIP</label>
+              <input className="input" value={form.zip} onChange={set('zip')} required inputMode="numeric" />
+            </div>
           </div>
 
           <label className="mt-4 flex items-start gap-3 rounded-xl bg-charcoal-900 border border-white/[0.07] px-4 py-3 cursor-pointer">
@@ -131,7 +173,7 @@ export default function DonateCheckout() {
           {STRIPE_READY ? (
             <div className="mt-6">
               {!detailsValid ? (
-                <p className="text-sm text-zinc-500">Fill in your name and email to enter your card.</p>
+                <p className="text-sm text-zinc-500">Fill in your name, contact info, and address to enter your card.</p>
               ) : creating ? (
                 <Loading label="Preparing secure payment…" />
               ) : (
