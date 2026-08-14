@@ -4,11 +4,11 @@ import { Hero, SectionHeading, Button, Eyebrow, FeatureCard } from '../component
 import { IMG } from '../content/images'
 
 const TIERS = [
-  { amount: 25, icon: '🌿', title: 'Green', body: 'Stocks the sideline — water, tape, and the little things a team burns through every week.' },
-  { amount: 50, icon: '🧤', title: 'Grit', body: 'Gloves, mouthguards, and practice gear for an Emperor.' },
-  { amount: 100, icon: '🪖', title: 'Gridiron', body: 'A meaningful chunk of a helmet or shoulder pads — real protection on the field.' },
+  { amount: 25, icon: '🏈', title: 'Green', body: 'Stocks the sideline — water, tape, and the little things a team burns through every week.' },
+  { amount: 50, icon: '🏈', title: 'Grit', body: 'Gloves, mouthguards, and practice gear for an Emperor.' },
+  { amount: 100, icon: '🏈', title: 'Gridiron', body: 'A meaningful chunk of a helmet or shoulder pads — real protection on the field.' },
   { amount: 250, icon: '🏆', title: 'Champion', body: 'Covers team meals for a game night, or travel for an away matchup.' },
-  { amount: 500, icon: '🌟', title: 'Legacy', body: 'Fuels scholarships and the experiences that change a young athlete\'s life.' },
+  { amount: 500, icon: '🏆', title: 'Legacy', body: 'Fuels scholarships and the experiences that change a young athlete\'s life.' },
 ]
 
 export default function Donate() {
@@ -60,7 +60,7 @@ export default function Donate() {
 
           {/* Custom amount */}
           <div className={`rounded-2xl p-7 ${custom ? 'bg-gradient-to-b from-field-700 to-field-900 border border-field-500/60 shadow-glow' : 'card'}`}>
-            <div className="text-3xl mb-4">✍️</div>
+            <div className="text-3xl mb-4">🏈</div>
             <label className="label">Custom amount</label>
             <div className="flex items-center gap-2">
               <span className="display text-3xl text-field-400">$</span>
@@ -92,9 +92,9 @@ export default function Donate() {
         <div className="section py-16">
           <SectionHeading eyebrow="Other ways to give" title="More Than Money" />
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            <FeatureCard icon="⏱️" title="Give Time">Volunteer at games and events — often worth more than a check.</FeatureCard>
-            <FeatureCard icon="🏢" title="Corporate Sponsor">Put your business on the banner and the Green Mile — packages from $300 a season.</FeatureCard>
-            <FeatureCard icon="🛍️" title="Shop the Store">Rep the Emperors. Every purchase supports the program.</FeatureCard>
+            <FeatureCard icon="🏈" title="Give Time">Volunteer at games and events — often worth more than a check.</FeatureCard>
+            <FeatureCard icon="🏆" title="Corporate Sponsor">Put your business on the banner and the Green Mile — packages from $300 a season.</FeatureCard>
+            <FeatureCard icon="🏈" title="Shop the Store">Rep the Emperors. Every purchase supports the program.</FeatureCard>
           </div>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button to="/volunteer" variant="outline" size="md">Volunteer</Button>
