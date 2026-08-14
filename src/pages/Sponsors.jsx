@@ -86,6 +86,20 @@ export default function Sponsors() {
             )
           })}
         </div>
+        {/* Custom amount — for businesses that don't fit a package */}
+        <div className="mt-8 max-w-5xl mx-auto card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="flex-1 min-w-0">
+            <div className="font-heading uppercase tracking-wider text-sm text-field-400">Something else in mind?</div>
+            <h3 className="font-heading uppercase tracking-wide text-lg text-white mt-1">Sponsor Any Amount</h3>
+            <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed">
+              Not every business fits a package. Give whatever works for you — every dollar goes straight to our kids.
+            </p>
+          </div>
+          <div className="shrink-0">
+            <Button to="/sponsors/custom" size="md">Choose Your Amount</Button>
+          </div>
+        </div>
+
         <p className="mt-8 text-center text-sm text-zinc-500">
           The Green Mile Boosters is a registered nonprofit — sponsorships are tax-deductible where applicable. EIN 92-2360865.
         </p>

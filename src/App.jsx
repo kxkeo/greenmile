@@ -15,6 +15,7 @@ import Volunteer from './pages/Volunteer'
 import Parents from './pages/Parents'
 import Sponsors from './pages/Sponsors'
 import SponsorDetail from './pages/SponsorDetail'
+import SponsorCustom from './pages/SponsorCustom'
 import Donate from './pages/Donate'
 import DonateCheckout from './pages/DonateCheckout'
 import Shop from './pages/Shop'
@@ -49,6 +50,8 @@ export default function App() {
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/parents" element={<Parents />} />
             <Route path="/sponsors" element={<Sponsors />} />
+            {/* Static route first so "custom" isn't treated as a tier slug. */}
+            <Route path="/sponsors/custom" element={<SponsorCustom />} />
             <Route path="/sponsors/:slug" element={<SponsorDetail />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/donate/checkout" element={<DonateCheckout />} />
