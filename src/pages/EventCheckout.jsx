@@ -6,19 +6,35 @@ import StripeCheckout, { STRIPE_READY, fmtUSD as fmt, FeeBreakdown, grossUpForSt
 // Generic paid-event checkout: /events/register/:id
 // Works for any active campaign (Country Nights dinner, raffle, alumni, …).
 // Requires a participant account — the registration + receipt APIs are tied to
-// one. Card payment via Stripe when keys are configured; "pay at the door"
-// otherwise (raffles always require card/online payment once Stripe is live).
+// one. Card payment only (no pay-at-the-door).
+//
+// When the event has a matching raffle on the same date, the raffle is offered
+// as an add-on so one card charge covers both; the server re-prices everything
+// from the database and records a registration row per campaign.
 
 export default function EventCheckout() {
   const { id } = useParams()
   const location = useLocation()
   const [campaign, setCampaign] = useState(undefined)
+  const [addonCampaign, setAddonCampaign] = useState(null)
   const [me, setMe] = useState(undefined) // undefined = loading, null = not signed in
 
   useEffect(() => {
     fetch('/api/campaigns')
       .then(r => r.ok ? r.json() : [])
-      .then(list => setCampaign((Array.isArray(list) ? list : []).find(c => String(c.id) === String(id)) || null))
+      .then(list => {
+        const all = Array.isArray(list) ? list : []
+        const c = all.find(x => String(x.id) === String(id)) || null
+        setCampaign(c)
+        // Offer the raffle as an add-on when this isn't itself the raffle.
+        if (c && c.meta?.kind !== 'raffle') {
+          setAddonCampaign(
+            all.find(x => x.meta?.kind === 'raffle' && x.event_date === c.event_date && x.id !== c.id) || null
+          )
+        } else {
+          setAddonCampaign(null)
+        }
+      })
       .catch(() => setCampaign(null))
     fetch('/api/auth/participant-me', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
@@ -49,48 +65,70 @@ export default function EventCheckout() {
     )
   }
 
-  return <CheckoutForm campaign={campaign} me={me} />
+  return <CheckoutForm campaign={campaign} addonCampaign={addonCampaign} me={me} />
 }
 
-function CheckoutForm({ campaign, me }) {
+// Remaining tickets for a capped campaign (e.g. the 200-ticket raffle).
+const remainingFor = c => {
+  const max = c?.meta?.max_tickets || 0
+  return max ? Math.max(0, max - (c.tickets_sold || 0)) : null
+}
+
+function CheckoutForm({ campaign, addonCampaign, me }) {
   const isRaffle = campaign.meta?.kind === 'raffle'
   const maxTickets = campaign.meta?.max_tickets || 0
-  const remaining = maxTickets ? Math.max(0, maxTickets - (campaign.tickets_sold || 0)) : null
+  const remaining = remainingFor(campaign)
   const maxQty = remaining != null ? Math.min(10, remaining) : 10
 
+  // Add-on (raffle) availability
+  const addonRemaining = remainingFor(addonCampaign)
+  const addonAvailable = !!addonCampaign && (addonRemaining == null || addonRemaining > 0)
+  const addonMaxQty = addonRemaining != null ? Math.min(10, addonRemaining) : 10
+
   const [qty, setQty] = useState(1)
+  const [addonQty, setAddonQty] = useState(0)
   const [form, setForm] = useState({
     firstName: me.firstName || '', lastName: me.lastName || '',
     email: me.email || '', phone: me.phone || '',
     address: '', city: '', state: 'CA', zip: '',
     emailOptIn: true,
   })
-  const [payAtEvent, setPayAtEvent] = useState(!STRIPE_READY)
   const [clientSecret, setClientSecret] = useState(null)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
 
-  const totalCents = (campaign.price_cents || 0) * qty
+  const mainCents  = (campaign.price_cents || 0) * qty
+  const addonCents = addonAvailable ? (addonCampaign.price_cents || 0) * addonQty : 0
+  const totalCents = mainCents + addonCents
+
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
   const formValid = form.firstName.trim() && form.lastName.trim() && form.address.trim()
     && form.city.trim() && form.state.trim() && form.zip.trim()
 
-  // Create the payment intent when paying by card and details are complete.
+  const addonId = addonAvailable && addonQty > 0 ? addonCampaign.id : null
+
+  // Create the payment intent once the details are complete. Re-runs when the
+  // quantities change so the charge always matches what's on screen.
   useEffect(() => {
-    if (!STRIPE_READY || payAtEvent || !formValid || totalCents <= 0) { setClientSecret(null); return }
+    if (!STRIPE_READY || !formValid || totalCents <= 0) { setClientSecret(null); return }
     let cancelled = false
+    setClientSecret(null)
     fetch('/api/events/payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ campaignId: campaign.id, amount_cents: totalCents, ticketQty: qty }),
+      body: JSON.stringify({
+        campaignId: campaign.id,
+        amount_cents: totalCents,
+        ticketQty: qty,
+        addonCampaignId: addonId,
+        addonQty: addonId ? addonQty : 0,
+      }),
     })
       .then(r => r.json())
       .then(d => { if (!cancelled) setClientSecret(d.clientSecret || null) })
       .catch(() => { if (!cancelled) setClientSecret(null) })
     return () => { cancelled = true }
-  }, [campaign.id, totalCents, qty, payAtEvent, formValid])
+  }, [campaign.id, totalCents, qty, addonId, addonQty, formValid])
 
   const register = async (paymentIntentId = null) => {
     const res = await fetch('/api/registrations/event', {
@@ -102,7 +140,8 @@ function CheckoutForm({ campaign, me }) {
         ...form,
         ticketQty: qty,
         totalCents,
-        payAtEvent: payAtEvent && !paymentIntentId,
+        addonCampaignId: addonId,
+        addonQty: addonId ? addonQty : 0,
         paymentIntentId,
       }),
     })
@@ -111,24 +150,22 @@ function CheckoutForm({ campaign, me }) {
     setDone(true)
   }
 
-  const submitPayAtEvent = async e => {
-    e.preventDefault()
-    setError(''); setBusy(true)
-    try { await register() } catch (err) { setError(err.message) } finally { setBusy(false) }
-  }
-
   if (done) {
     return (
       <Shell title="You're In! 🤠" subtitle={`${qty} ${isRaffle ? 'raffle ' : ''}ticket${qty > 1 ? 's' : ''} for ${campaign.title}.`}>
         <div className="text-center">
           <div className="display text-field-400 text-4xl mb-4">{fmt(totalCents)}</div>
+          {addonId > 0 && (
+            <p className="text-sm text-field-300 mb-2">
+              Plus {addonQty} {addonCampaign.title} ticket{addonQty > 1 ? 's' : ''} — good luck!
+            </p>
+          )}
           <p className="text-sm text-zinc-400 mb-2">
             {form.email
               ? <>A receipt is on its way to <span className="text-zinc-200">{form.email}</span>.</>
               : 'Your registration is recorded.'}
           </p>
-          {payAtEvent && <p className="text-sm text-zinc-400">Payment is due at the event — see you there!</p>}
-          {isRaffle && <p className="text-sm text-zinc-400">Drawing on September 26, 2026. Need not be present to win.</p>}
+          {(isRaffle || addonId) && <p className="text-sm text-zinc-400">Drawing on September 26, 2026. Need not be present to win.</p>}
           <div className="mt-7 flex flex-col gap-3">
             <Button to="/events/country-nights" size="md" className="w-full">Back to Country Nights</Button>
             <Button to="/my-account/dashboard" variant="outline" size="md" className="w-full">My Account</Button>
@@ -140,9 +177,7 @@ function CheckoutForm({ campaign, me }) {
 
   return (
     <Shell title={campaign.title} subtitle={campaign.event_date ? `${campaign.event_date}${campaign.location ? ` · ${campaign.location}` : ''}` : null} wide>
-      <form onSubmit={submitPayAtEvent} className="space-y-5">
-        {error && <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
-
+      <div className="space-y-5">
         {/* Quantity + total */}
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4">
           <div>
@@ -159,6 +194,34 @@ function CheckoutForm({ campaign, me }) {
             <div className="display text-field-400 text-4xl">{fmt(totalCents)}</div>
           </div>
         </div>
+
+        {/* Raffle add-on */}
+        {addonAvailable && (
+          <div className="rounded-xl bg-charcoal-900 border border-field-500/30 px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="font-heading uppercase tracking-wide text-sm text-field-300">
+                  Add {addonCampaign.title}
+                </div>
+                <p className="mt-1 text-xs text-zinc-400 max-w-sm leading-relaxed">
+                  {fmt(addonCampaign.price_cents)} each · Grand Prize $5,000. Need not be present to win.
+                  {addonRemaining != null && ` ${addonRemaining} left.`}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <QtyBtn onClick={() => setAddonQty(q => Math.max(0, q - 1))} disabled={addonQty <= 0}>−</QtyBtn>
+                <span className="display text-white text-2xl w-8 text-center">{addonQty}</span>
+                <QtyBtn onClick={() => setAddonQty(q => Math.min(addonMaxQty, q + 1))} disabled={addonQty >= addonMaxQty}>+</QtyBtn>
+              </div>
+            </div>
+            {addonQty > 0 && (
+              <div className="mt-3 pt-3 border-t border-white/[0.07] flex items-center justify-between text-sm">
+                <span className="text-zinc-400">{qty} × {campaign.title} + {addonQty} × raffle</span>
+                <span className="text-zinc-200">{fmt(mainCents)} + {fmt(addonCents)}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Contact + billing info */}
         <div className="grid sm:grid-cols-2 gap-4">
@@ -181,59 +244,34 @@ function CheckoutForm({ campaign, me }) {
           <span className="text-sm text-zinc-300">Keep me in the loop — email me about future Green Mile Boosters events and promotions.</span>
         </label>
 
-        {/* Payment */}
+        {/* Payment — card only */}
         {STRIPE_READY ? (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Button type="button" variant={!payAtEvent ? 'primary' : 'outline'} size="md"
-                      onClick={() => setPayAtEvent(false)} className="w-full">
-                Pay by Card
-              </Button>
-              {!isRaffle && (
-                <Button type="button" variant={payAtEvent ? 'primary' : 'outline'} size="md"
-                        onClick={() => setPayAtEvent(true)} className="w-full">
-                  Pay at the Door
-                </Button>
-              )}
-            </div>
-            {!payAtEvent && (
-              formValid
-                ? (clientSecret
-                    ? <>
-                        <FeeBreakdown baseCents={totalCents} label={`${qty} Ticket${qty > 1 ? 's' : ''}`} />
-                        <StripeCheckout
-                          clientSecret={clientSecret}
-                          amountCents={grossUpForStripe(totalCents)}
-                          onPaid={register}
-                          buttonLabel={`Pay ${fmt(grossUpForStripe(totalCents))}`}
-                        />
-                      </>
-                    : <Loading label="Preparing secure payment…" />)
-                : <p className="text-sm text-zinc-500">Fill in your details above to continue to card payment.</p>
-            )}
-            {payAtEvent && (
-              <Button size="lg" className="w-full" disabled={busy || !formValid}>
-                {busy ? 'Reserving…' : `Reserve ${qty} Ticket${qty > 1 ? 's' : ''} — Pay at the Door`}
-              </Button>
-            )}
-          </>
+          formValid
+            ? (clientSecret
+                ? <>
+                    <FeeBreakdown baseCents={totalCents} label={addonQty > 0 ? 'Tickets + raffle' : `${qty} Ticket${qty > 1 ? 's' : ''}`} />
+                    <StripeCheckout
+                      clientSecret={clientSecret}
+                      amountCents={grossUpForStripe(totalCents)}
+                      onPaid={register}
+                      buttonLabel={`Pay ${fmt(grossUpForStripe(totalCents))}`}
+                    />
+                  </>
+                : <Loading label="Preparing secure payment…" />)
+            : <p className="text-sm text-zinc-500">Fill in your details above to continue to card payment.</p>
         ) : (
-          <>
-            <div className="rounded-xl bg-field-900/40 border border-field-500/30 p-5 text-sm text-zinc-300 leading-relaxed">
-              Online card payment is being connected. Reserve your tickets now and pay at the door
-              (cash or card), or email <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>.
-            </div>
-            <Button size="lg" className="w-full" disabled={busy || !formValid}>
-              {busy ? 'Reserving…' : `Reserve ${qty} Ticket${qty > 1 ? 's' : ''} — ${fmt(totalCents)} at the Door`}
-            </Button>
-          </>
+          <div className="rounded-xl bg-field-900/40 border border-field-500/30 p-5 text-sm text-zinc-300 leading-relaxed">
+            Online card payment is being connected. To buy tickets right now, email{' '}
+            <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
+            and we'll take care of you.
+          </div>
         )}
 
         <p className="text-xs text-zinc-600 text-center">
           You'll get an email confirmation with your ticket details. The Green Mile Boosters is a
           registered nonprofit — Tax ID 92-2360865.
         </p>
-      </form>
+      </div>
     </Shell>
   )
 }
