@@ -20,6 +20,23 @@ const loadActive = async (env, id) => {
   return { campaign: c }
 }
 
+// Who's buying, straight from the session — never trusted from the client.
+// Attaching this to the PaymentIntent makes payments searchable by name/email
+// in the Stripe dashboard and ties the charge back to the booster account.
+async function buyerFromSession(request, env) {
+  try {
+    const m = (request.headers.get('Cookie') || '').match(/participant_session=([^;]+)/)
+    if (!m) return null
+    const raw = await env.SESSIONS.get(`participant_session:${m[1]}`)
+    if (!raw) return null
+    const { participantId } = JSON.parse(raw)
+    if (!participantId) return null
+    return await env.DB.prepare(
+      'SELECT id, first_name, last_name, email, phone FROM participants WHERE id = ?'
+    ).bind(participantId).first()
+  } catch { return null }
+}
+
 export async function onRequestPost({ request, env }) {
   const stripeKey = await getStripeSecretKey(env)
   if (!stripeKey) return json({ error: 'Payment processing not configured' }, 503)
@@ -55,9 +72,17 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Amount does not match campaign price' }, 400)
   }
 
-  const description = addon
-    ? `Green Mile Boosters: ${campaign.title} × ${qty} + ${addon.title} × ${addonQty}`
-    : `Green Mile Boosters: ${campaign.title || 'Event Registration'} × ${qty}`
+  const buyer = await buyerFromSession(request, env)
+  const buyerName = buyer ? `${buyer.first_name || ''} ${buyer.last_name || ''}`.trim() : ''
+
+  // What they bought, in plain words — this is the line that shows in the
+  // Stripe payments list, so it has to be readable at a glance on event day.
+  const items = [`${qty} × ${campaign.title}`]
+  if (addon) items.push(`${addonQty} × ${addon.title}`)
+  const description = [
+    `Green Mile Boosters: ${items.join(' + ')}`,
+    buyerName || null,
+  ].filter(Boolean).join(' — ')
 
   const params = {
     // Grossed up to cover Stripe's 2.9% + $0.30 so the program nets the full
@@ -67,11 +92,22 @@ export async function onRequestPost({ request, env }) {
     'payment_method_types[]':  'card',
     description,
     'metadata[campaign_id]':   String(campaignId),
+    'metadata[event]':         String(campaign.title || ''),
     'metadata[ticket_qty]':    String(qty),
+    'metadata[purchase]':      items.join(' + ').slice(0, 500),
   }
   if (addon) {
     params['metadata[addon_campaign_id]'] = String(addon.id)
+    params['metadata[addon_event]']       = String(addon.title || '')
     params['metadata[addon_qty]']         = String(addonQty)
+  }
+  if (buyer) {
+    params['metadata[participant_id]'] = String(buyer.id)
+    if (buyerName)    params['metadata[buyer_name]']  = buyerName.slice(0, 200)
+    if (buyer.email)  params['metadata[buyer_email]'] = String(buyer.email).slice(0, 200)
+    if (buyer.phone)  params['metadata[buyer_phone]'] = String(buyer.phone).slice(0, 40)
+    // Stripe emails its own receipt and surfaces the address in the dashboard.
+    if (buyer.email)  params['receipt_email'] = String(buyer.email)
   }
 
   const resp = await fetch('https://api.stripe.com/v1/payment_intents', {

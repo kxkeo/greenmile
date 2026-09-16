@@ -23,6 +23,7 @@ export async function onRequestGet({ env }) {
         er.notes, er.created_at,
         c.title   AS campaign_title,
         c.type    AS campaign_type,
+        c.meta    AS campaign_meta,
         c.event_date,
         rp.first_name || ' ' || rp.last_name AS referred_player_name
       FROM event_registrations er

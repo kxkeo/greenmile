@@ -738,10 +738,171 @@ function CommunicationsSection() {
   )
 }
 
+// Day-of door list: one line per guest (their account), merging every campaign
+// they bought for that date — so a dinner + raffle purchase reads as one guest
+// instead of two rows. Raffle-only buyers get no check-in button (they don't
+// need to be let in; need not be present to win).
+function DoorList({ rows, onCheckIn }) {
+  const [date, setDate] = useState('')
+  const [q, setQ] = useState('')
+
+  const isRaffle = r => {
+    try { if (JSON.parse(r.campaign_meta || '{}').kind === 'raffle') return true } catch {}
+    return /raffle/i.test(r.campaign_title || '')
+  }
+
+  const dates = [...new Set(rows.map(r => r.event_date).filter(Boolean))].sort()
+  const active = date || dates[0] || ''
+  const forDate = rows.filter(r => r.event_date === active && r.payment_status !== 'refunded')
+
+  // Merge each guest's rows for this date.
+  const guests = {}
+  for (const r of forDate) {
+    const key = r.participant_id || `e:${(r.email || '').toLowerCase()}|${r.first_name} ${r.last_name}`
+    const g = guests[key] ||= {
+      key, name: fullName(r.first_name, r.last_name), email: r.email, phone: r.phone,
+      entryRows: [], raffleRows: [], entry: 0, raffle: 0, paid: true,
+    }
+    const n = r.ticket_qty ?? 1
+    if (isRaffle(r)) { g.raffle += n; g.raffleRows.push(r) }
+    else             { g.entry  += n; g.entryRows.push(r) }
+    if (r.payment_status !== 'paid') g.paid = false
+  }
+
+  const needle = q.trim().toLowerCase()
+  const list = Object.values(guests)
+    .filter(g => !needle || g.name.toLowerCase().includes(needle)
+      || (g.email || '').toLowerCase().includes(needle) || (g.phone || '').includes(needle))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  // A guest counts as checked in once all their entry rows are.
+  const isIn = g => g.entryRows.length > 0 && g.entryRows.every(r => r.checked_in === 1)
+  // Raffle-only guests are excluded from the check-in denominator — they have
+  // no entry ticket, so they can never be checked in.
+  const atDoor = list.filter(g => g.entryRows.length > 0)
+  const totals = {
+    guests: list.length,
+    entry:  list.reduce((s, g) => s + g.entry, 0),
+    raffle: list.reduce((s, g) => s + g.raffle, 0),
+    in:     `${atDoor.filter(isIn).length}/${atDoor.length}`,
+  }
+
+  if (!dates.length) return <EmptyCard>No paid registrations yet — the door list fills in as tickets sell.</EmptyCard>
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div className="min-w-[180px]">
+          <label className="label">Event date</label>
+          <select className="input" value={active} onChange={e => setDate(e.target.value)}>
+            {dates.map(d => <option key={d} value={d}>{dateStr(d)}</option>)}
+          </select>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="label">Find a guest</label>
+          <input className="input" placeholder="Name, email, or phone…" value={q} onChange={e => setQ(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden border border-white/[0.06] mb-4">
+        {[['Guests', totals.guests], ['Entry tickets', totals.entry], ['Raffle tickets', totals.raffle], ['Checked in', totals.in]].map(([l, v]) => (
+          <div key={l} className="bg-charcoal-850 px-3 py-4 text-center">
+            <div className="display text-field-400 text-2xl leading-none">{v}</div>
+            <div className="mt-1 font-heading uppercase tracking-wider text-[0.62rem] text-zinc-500">{l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-2">
+        {list.map(g => {
+          const checkedIn = isIn(g)
+          return (
+            <div key={g.key} className={`card p-4 flex flex-wrap items-center gap-3 ${checkedIn ? 'border-field-500/40' : ''}`}>
+              <div className="flex-1 min-w-[180px]">
+                <div className="font-heading uppercase tracking-wide text-white">{g.name}</div>
+                <div className="text-xs text-zinc-500">
+                  {g.email || 'no email'}{g.phone ? ` · ${g.phone}` : ''}
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {g.entry > 0 && (
+                    <span className="px-2 py-0.5 rounded text-[0.65rem] font-heading uppercase tracking-wide bg-field-500/20 text-field-300">
+                      {g.entry} entry ticket{g.entry > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {g.raffle > 0 && (
+                    <span className="px-2 py-0.5 rounded text-[0.65rem] font-heading uppercase tracking-wide bg-amber-500/20 text-amber-300">
+                      {g.raffle} raffle
+                    </span>
+                  )}
+                  {!g.paid && (
+                    <span className="px-2 py-0.5 rounded text-[0.65rem] font-heading uppercase tracking-wide bg-red-500/20 text-red-300">
+                      Unpaid
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="shrink-0">
+                {g.entryRows.length === 0 ? (
+                  <span className="text-xs text-zinc-500">Raffle only — no entry</span>
+                ) : checkedIn ? (
+                  <Button size="sm" variant="outline" onClick={() => onCheckIn(g.entryRows, false)}>Undo check-in</Button>
+                ) : (
+                  <Button size="sm" onClick={() => onCheckIn(g.entryRows, true)}>Check In</Button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+        {list.length === 0 && <EmptyCard>No guests match.</EmptyCard>}
+      </div>
+    </div>
+  )
+}
+
 function RegistrationsSection() {
-  const { loading, data } = useData('/api/admin/event-registrations')
-  if (loading) return <Loading label="Loading registrations…" />
-  const rows = Array.isArray(data) ? data : []
+  const [rows, setRows] = useState(null)
+  const [view, setView] = useState('door')
+
+  const load = () => getJSON('/api/admin/event-registrations')
+    .then(d => setRows(Array.isArray(d) ? d : []))
+    .catch(() => setRows([]))
+  useEffect(() => { load() }, [])
+
+  // Check in (or undo) every entry row for a guest.
+  const onCheckIn = async (regRows, checkedIn) => {
+    const ids = regRows.map(r => r.id)
+    setRows(rs => rs.map(r => ids.includes(r.id) ? { ...r, checked_in: checkedIn ? 1 : 0 } : r)) // optimistic
+    try {
+      for (const id of ids) {
+        await fetch('/api/admin/event-registrations', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ id, checkedIn }),
+        })
+      }
+    } catch { load() } // reconcile if anything failed
+  }
+
+  if (rows === null) return <Loading label="Loading registrations…" />
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1.5">
+        {[['door', 'Door Check-In'], ['all', 'All Registrations']].map(([k, label]) => (
+          <button key={k} onClick={() => setView(k)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading uppercase tracking-wide transition ${
+              view === k ? 'bg-field-500 text-white' : 'bg-white/[0.04] text-zinc-400 hover:text-white'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {view === 'door'
+        ? <DoorList rows={rows} onCheckIn={onCheckIn} />
+        : <AllRegistrationsTable rows={rows} />}
+    </div>
+  )
+}
+
+function AllRegistrationsTable({ rows }) {
   return (
     <Table
       empty="No event registrations yet."
