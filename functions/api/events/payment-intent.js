@@ -11,6 +11,7 @@
 // and will start declining a legitimate buyer.
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
 import { getStripeSecretKey } from '../../_lib/stripeKey.js'
+import { reuseIntent } from '../../_lib/reuseIntent.js'
 
 function json(d, s = 200) {
   return new Response(JSON.stringify(d), { status: s, headers: { 'Content-Type': 'application/json' } })
@@ -124,33 +125,17 @@ export async function onRequestPost({ request, env }) {
     body: new URLSearchParams(body),
   }).then(r => r.json())
 
-  // Reuse the buyer's existing intent when they come back to change something.
-  // Only an intent that is still unpaid, still ours, and still theirs qualifies;
-  // anything else falls through to creating a fresh one.
-  const reuseId = typeof body.paymentIntentId === 'string' && /^pi_[A-Za-z0-9_]+$/.test(body.paymentIntentId)
-    ? body.paymentIntentId : null
-  if (reuseId) {
-    try {
-      const existing = await fetch(`https://api.stripe.com/v1/payment_intents/${reuseId}`, {
-        headers: { 'Authorization': `Bearer ${stripeKey}` },
-      }).then(r => r.json())
-      const open  = existing?.status === 'requires_payment_method' || existing?.status === 'requires_confirmation'
-      const mine  = !buyer || String(existing?.metadata?.participant_id || '') === String(buyer.id)
-      if (open && mine) {
-        // amount/currency are the only create-only fields we set that can't be
-        // updated; currency never changes, so only amount matters here.
-        const { currency, ...updatable } = params
-        delete updatable['payment_method_types[]']
-        const updated = await stripePost(`payment_intents/${reuseId}`, updatable)
-        if (updated?.client_secret) {
-          return json({
-            clientSecret:    updated.client_secret,
-            paymentIntentId: updated.id,
-            chargeCents:     grossUpForStripe(expectedBase),
-          })
-        }
-      }
-    } catch { /* fall through and create a new intent */ }
+  // Reuse the buyer's existing intent when they come back to change something,
+  // rather than leaving a trail of abandoned intents on their card.
+  const reused = await reuseIntent(stripeKey, body.clientSecret, params, {
+    verify: pi => !buyer || String(pi.metadata?.participant_id || '') === String(buyer.id),
+  })
+  if (reused) {
+    return json({
+      clientSecret:    reused.client_secret,
+      paymentIntentId: reused.id,
+      chargeCents:     grossUpForStripe(expectedBase),
+    })
   }
 
   const pi = await stripePost('payment_intents', params)

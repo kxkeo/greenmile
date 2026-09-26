@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Button, Eyebrow, Loading } from '../components/ui'
 import StripeCheckout, { STRIPE_READY, fmtUSD, FeeBreakdown, grossUpForStripe } from '../components/StripeCheckout'
 
-// Public donation checkout — no account required. Collects the donor's name and
-// email, spins up a PaymentIntent, takes the card via the shared Stripe
-// element, then records the gift (which fires the receipt email).
+// Public donation checkout — no account required. Collects the donor's details,
+// then (on Continue, never on a keystroke) creates ONE PaymentIntent, takes the
+// card via the shared Stripe element, and records the gift, which fires the
+// receipt email. Editing details and continuing again updates that same intent
+// rather than stacking another against the donor's card.
 
 export default function DonateCheckout() {
   const [params] = useSearchParams()
@@ -16,6 +18,7 @@ export default function DonateCheckout() {
     firstName: '', lastName: '', organization: '', email: '', phone: '',
     address: '', city: '', state: 'CA', zip: '', emailOptIn: true,
   })
+  const [step, setStep] = useState('details')   // details | pay
   const [clientSecret, setClientSecret] = useState(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -29,29 +32,34 @@ export default function DonateCheckout() {
     && form.phone.trim() && form.address.trim() && form.city.trim()
     && form.state.trim() && form.zip.trim()
 
-  // Create the PaymentIntent once the donor details are filled in.
-  useEffect(() => {
-    if (!STRIPE_READY || !detailsValid || amountCents < 100) { setClientSecret(null); return }
-    let cancelled = false
+  // One intent per donation, created when they tap Continue.
+  const goToPayment = async () => {
+    if (!STRIPE_READY || !detailsValid || amountCents < 100) return
     setCreating(true); setError('')
-    fetch('/api/donations/payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amountCents,
-        email: form.email.trim(),
-        name: `${form.firstName.trim()} ${form.lastName.trim()}`,
-        business: form.organization.trim() || undefined,
-        kind: 'donation',
-        description: `Green Mile Boosters donation — $${amount}`,
-      }),
-    })
-      .then(r => r.json())
-      .then(d => { if (!cancelled) { if (d.clientSecret) setClientSecret(d.clientSecret); else setError(d.error || 'Could not start payment.') } })
-      .catch(() => { if (!cancelled) setError('Could not start payment. Please try again.') })
-      .finally(() => { if (!cancelled) setCreating(false) })
-    return () => { cancelled = true }
-  }, [amountCents, detailsValid, form.email, form.firstName, form.lastName, form.organization])
+    try {
+      const res = await fetch('/api/donations/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountCents,
+          email: form.email.trim(),
+          name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+          business: form.organization.trim() || undefined,
+          kind: 'donation',
+          description: `Green Mile Boosters donation — $${amount}`,
+          clientSecret,   // reuse this intent if they came back to edit
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok || !d.clientSecret) throw new Error(d.error || 'Could not start payment.')
+      setClientSecret(d.clientSecret)
+      setStep('pay')
+    } catch (err) {
+      setError(err.message || 'Could not start payment. Please try again.')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const recordDonation = async paymentIntentId => {
     const res = await fetch('/api/donations', {
@@ -116,7 +124,7 @@ export default function DonateCheckout() {
         </p>
       )}
 
-      {amount > 0 && (
+      {amount > 0 && step === 'details' && (
         <>
           <div className="mt-6 grid sm:grid-cols-2 gap-4">
             <div>
@@ -172,20 +180,12 @@ export default function DonateCheckout() {
 
           {STRIPE_READY ? (
             <div className="mt-6">
-              {!detailsValid ? (
-                <p className="text-sm text-zinc-500">Fill in your name, contact info, and address to enter your card.</p>
-              ) : creating ? (
-                <Loading label="Preparing secure payment…" />
-              ) : (
-                <>
-                  <FeeBreakdown baseCents={amountCents} label="Donation" className="mb-5" />
-                  <StripeCheckout
-                    clientSecret={clientSecret}
-                    amountCents={grossUpForStripe(amountCents)}
-                    onPaid={recordDonation}
-                    buttonLabel={`Donate ${fmtUSD(grossUpForStripe(amountCents))}`}
-                  />
-                </>
+              <FeeBreakdown baseCents={amountCents} label="Donation" className="mb-5" />
+              <Button size="lg" className="w-full" onClick={goToPayment} disabled={!detailsValid || creating}>
+                {creating ? 'Preparing secure payment…' : `Continue to Payment · ${fmtUSD(grossUpForStripe(amountCents))}`}
+              </Button>
+              {!detailsValid && (
+                <p className="mt-3 text-sm text-zinc-500 text-center">Fill in your name, contact info, and address to enter your card.</p>
               )}
             </div>
           ) : (
@@ -198,6 +198,34 @@ export default function DonateCheckout() {
               </p>
             </div>
           )}
+        </>
+      )}
+
+      {amount > 0 && step === 'pay' && (
+        <>
+          <div className="mt-6 rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4 text-sm text-zinc-400">
+            {form.firstName.trim()} {form.lastName.trim()}
+            {form.organization.trim() ? ` · ${form.organization.trim()}` : ''}
+            <div className="text-xs text-zinc-500 mt-1">{form.email.trim()}</div>
+          </div>
+
+          {error && <div className="mt-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
+
+          <div className="mt-6">
+            <FeeBreakdown baseCents={amountCents} label="Donation" className="mb-5" />
+            {clientSecret
+              ? <StripeCheckout
+                  clientSecret={clientSecret}
+                  amountCents={grossUpForStripe(amountCents)}
+                  onPaid={recordDonation}
+                  buttonLabel={`Donate ${fmtUSD(grossUpForStripe(amountCents))}`}
+                />
+              : <Loading label="Preparing secure payment…" />}
+            <button type="button" onClick={() => setStep('details')}
+              className="mt-3 w-full text-sm text-zinc-400 hover:text-field-400 py-1">
+              Back to edit your details
+            </button>
+          </div>
         </>
       )}
     </Shell>

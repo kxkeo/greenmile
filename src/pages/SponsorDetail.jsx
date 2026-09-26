@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { Hero, SectionHeading, Button, Eyebrow, Loading } from '../components/ui'
 import { IMG } from '../content/images'
@@ -8,6 +8,10 @@ import StripeCheckout, { STRIPE_READY, fmtUSD, FeeBreakdown, grossUpForStripe } 
 // Sponsor package info + card checkout: /sponsors/:slug
 // Public (a business owner shouldn't need an account). Records the sponsorship
 // as a donation carrying the tier label and business name.
+//
+// The PaymentIntent is created when they tap Continue, never on a keystroke —
+// one intent per sponsorship. Going back to fix a typo updates that same intent
+// instead of stacking another attempt against the card.
 
 export default function SponsorDetail() {
   const { slug } = useParams()
@@ -15,6 +19,7 @@ export default function SponsorDetail() {
   if (!tier) return <Navigate to="/sponsors" replace />
 
   const [form, setForm] = useState({ business: '', firstName: '', lastName: '', email: '', phone: '', emailOptIn: true })
+  const [step, setStep] = useState('details')   // details | pay
   const [clientSecret, setClientSecret] = useState(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -24,29 +29,34 @@ export default function SponsorDetail() {
   const detailsValid = form.business.trim() && form.firstName.trim() && form.lastName.trim()
     && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
 
-  useEffect(() => {
-    if (!STRIPE_READY || !detailsValid) { setClientSecret(null); return }
-    let cancelled = false
+  const goToPayment = async () => {
+    if (!STRIPE_READY || !detailsValid) return
     setCreating(true); setError('')
-    fetch('/api/donations/payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amountCents: tier.amountCents,
-        email: form.email.trim(),
-        name: `${form.firstName.trim()} ${form.lastName.trim()}`,
-        business: form.business.trim(),
-        tierLabel: tier.name,
-        kind: 'sponsorship',
-        description: `${tier.name} — ${form.business.trim()}`,
-      }),
-    })
-      .then(r => r.json())
-      .then(d => { if (!cancelled) { if (d.clientSecret) setClientSecret(d.clientSecret); else setError(d.error || 'Could not start payment.') } })
-      .catch(() => { if (!cancelled) setError('Could not start payment. Please try again.') })
-      .finally(() => { if (!cancelled) setCreating(false) })
-    return () => { cancelled = true }
-  }, [tier.amountCents, tier.name, detailsValid, form.email, form.firstName, form.lastName, form.business])
+    try {
+      const res = await fetch('/api/donations/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountCents: tier.amountCents,
+          email: form.email.trim(),
+          name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+          business: form.business.trim(),
+          tierLabel: tier.name,
+          kind: 'sponsorship',
+          description: `${tier.name} — ${form.business.trim()}`,
+          clientSecret,   // reuse this intent if they came back to edit
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok || !d.clientSecret) throw new Error(d.error || 'Could not start payment.')
+      setClientSecret(d.clientSecret)
+      setStep('pay')
+    } catch (err) {
+      setError(err.message || 'Could not start payment. Please try again.')
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const recordSponsorship = async paymentIntentId => {
     const res = await fetch('/api/donations', {
@@ -133,6 +143,7 @@ export default function SponsorDetail() {
             <span className="display text-field-400 text-3xl">{fmtUSD(tier.amountCents)}</span>
           </div>
 
+          {step === 'details' ? (<>
           <div className="mt-5 space-y-4">
             <div>
               <label className="label">Business Name</label>
@@ -169,20 +180,12 @@ export default function SponsorDetail() {
 
           {STRIPE_READY ? (
             <div className="mt-6">
-              {!detailsValid ? (
-                <p className="text-sm text-zinc-500">Fill in your business and contact details to enter your card.</p>
-              ) : creating ? (
-                <Loading label="Preparing secure payment…" />
-              ) : (
-                <>
-                  <FeeBreakdown baseCents={tier.amountCents} label={tier.name} className="mb-5" />
-                  <StripeCheckout
-                    clientSecret={clientSecret}
-                    amountCents={grossUpForStripe(tier.amountCents)}
-                    onPaid={recordSponsorship}
-                    buttonLabel={`Sponsor ${fmtUSD(grossUpForStripe(tier.amountCents))}`}
-                  />
-                </>
+              <FeeBreakdown baseCents={tier.amountCents} label={tier.name} className="mb-5" />
+              <Button size="lg" className="w-full" onClick={goToPayment} disabled={!detailsValid || creating}>
+                {creating ? 'Preparing secure payment…' : `Continue to Payment · ${fmtUSD(grossUpForStripe(tier.amountCents))}`}
+              </Button>
+              {!detailsValid && (
+                <p className="mt-3 text-sm text-zinc-500 text-center">Fill in your business and contact details to enter your card.</p>
               )}
             </div>
           ) : (
@@ -190,6 +193,32 @@ export default function SponsorDetail() {
               Online card payment is being connected. To lock in your sponsorship now, email{' '}
               <a href="mailto:info@greenmileboosters.org?subject=Sponsorship%20Inquiry" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
               or call Coach Lester at <a href="tel:5597370804" className="text-field-400 hover:text-field-300">(559) 737-0804</a>.
+            </div>
+          )}
+          </>) : (
+            <div className="mt-5">
+              <div className="rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4 text-sm text-zinc-300">
+                {form.business.trim()}
+                <div className="text-xs text-zinc-500 mt-1">
+                  {form.firstName.trim()} {form.lastName.trim()} · {form.email.trim()}
+                </div>
+              </div>
+
+              {error && <div className="mt-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
+
+              <FeeBreakdown baseCents={tier.amountCents} label={tier.name} className="my-5" />
+              {clientSecret
+                ? <StripeCheckout
+                    clientSecret={clientSecret}
+                    amountCents={grossUpForStripe(tier.amountCents)}
+                    onPaid={recordSponsorship}
+                    buttonLabel={`Sponsor ${fmtUSD(grossUpForStripe(tier.amountCents))}`}
+                  />
+                : <Loading label="Preparing secure payment…" />}
+              <button type="button" onClick={() => setStep('details')}
+                className="mt-3 w-full text-sm text-zinc-400 hover:text-field-400 py-1">
+                Back to edit your details
+              </button>
             </div>
           )}
         </div>

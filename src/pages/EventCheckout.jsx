@@ -101,7 +101,6 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
   })
   const [step, setStep] = useState('details')   // details | pay
   const [clientSecret, setClientSecret] = useState(null)
-  const [piId, setPiId] = useState(null)
   const [prepping, setPrepping] = useState(false)
   const [payError, setPayError] = useState('')
   const [done, setDone] = useState(false)
@@ -132,13 +131,12 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
           ticketQty: qty,
           addonCampaignId: addonId,
           addonQty: addonId ? addonQty : 0,
-          paymentIntentId: piId,
+          clientSecret,   // reuse this intent if they came back to edit
         }),
       })
       const d = await res.json()
       if (!res.ok || !d.clientSecret) throw new Error(d.error || 'Could not start payment. Please try again.')
       setClientSecret(d.clientSecret)
-      setPiId(d.paymentIntentId || piId)
       setStep('pay')
     } catch (err) {
       setPayError(err.message)

@@ -63,6 +63,7 @@ export default function SponsorCustom() {
           tierLabel: label,
           kind: 'sponsorship',
           description: `Custom Sponsorship — ${form.business.trim()}`,
+          clientSecret,   // reuse this intent if they came back to edit
         }),
       })
       const data = await res.json()
@@ -76,7 +77,9 @@ export default function SponsorCustom() {
     }
   }
 
-  const backToDetails = () => { setStep('details'); setClientSecret(null); setError('') }
+  // Keep the client secret on the way back — continuing again updates that same
+  // intent rather than opening another attempt against the card.
+  const backToDetails = () => { setStep('details'); setError('') }
 
   const recordSponsorship = async paymentIntentId => {
     const res = await fetch('/api/donations', {

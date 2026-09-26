@@ -76,8 +76,6 @@ export async function onRequest(context) {
     '/api/store/shipping-rate',
     '/api/store/orders/confirmation',
     // Registrations & donations public submit
-    '/api/registrations/golf',
-    '/api/registrations/camp',
     // Public payment-intent for donations & business sponsorships (no login)
     '/api/donations/payment-intent',
   ]
@@ -96,7 +94,6 @@ export async function onRequest(context) {
     '/api/store/payment-intent',
     '/api/events/payment-intent',
     '/api/registrations/event',
-    '/api/stripe/create-payment-intent',
     // Team dinners are members-only — both the schedule (GET) and booking
     // (POST /book) require a signed-in participant.
     '/api/team-dinners',
