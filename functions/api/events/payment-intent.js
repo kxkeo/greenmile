@@ -3,6 +3,12 @@
 // raffle, alumni games, …). Optionally bundles an add-on campaign bought in the
 // same checkout (e.g. raffle tickets alongside a dinner ticket) into ONE charge.
 // Auth: middleware requires participant_session
+//
+// Pass an existing `paymentIntentId` and we UPDATE that intent in place rather
+// than creating another one. A buyer who backs up to change their ticket count
+// should end up with a single intent, not a trail of abandoned ones — Stripe's
+// Radar counts repeated intents on the same card toward its card-velocity rule
+// and will start declining a legitimate buyer.
 import { grossUpForStripe } from '../../_lib/stripeFee.js'
 import { getStripeSecretKey } from '../../_lib/stripeKey.js'
 
@@ -95,11 +101,10 @@ export async function onRequestPost({ request, env }) {
     'metadata[event]':         String(campaign.title || ''),
     'metadata[ticket_qty]':    String(qty),
     'metadata[purchase]':      items.join(' + ').slice(0, 500),
-  }
-  if (addon) {
-    params['metadata[addon_campaign_id]'] = String(addon.id)
-    params['metadata[addon_event]']       = String(addon.title || '')
-    params['metadata[addon_qty]']         = String(addonQty)
+    // Cleared rather than left stale when an add-on is dropped on a re-edit.
+    'metadata[addon_campaign_id]': addon ? String(addon.id) : '',
+    'metadata[addon_event]':       addon ? String(addon.title || '') : '',
+    'metadata[addon_qty]':         addon ? String(addonQty) : '',
   }
   if (buyer) {
     params['metadata[participant_id]'] = String(buyer.id)
@@ -110,19 +115,52 @@ export async function onRequestPost({ request, env }) {
     if (buyer.email)  params['receipt_email'] = String(buyer.email)
   }
 
-  const resp = await fetch('https://api.stripe.com/v1/payment_intents', {
+  const stripePost = (path, body) => fetch(`https://api.stripe.com/v1/${path}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${stripeKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: new URLSearchParams(params),
-  })
+    body: new URLSearchParams(body),
+  }).then(r => r.json())
 
-  const pi = await resp.json()
+  // Reuse the buyer's existing intent when they come back to change something.
+  // Only an intent that is still unpaid, still ours, and still theirs qualifies;
+  // anything else falls through to creating a fresh one.
+  const reuseId = typeof body.paymentIntentId === 'string' && /^pi_[A-Za-z0-9_]+$/.test(body.paymentIntentId)
+    ? body.paymentIntentId : null
+  if (reuseId) {
+    try {
+      const existing = await fetch(`https://api.stripe.com/v1/payment_intents/${reuseId}`, {
+        headers: { 'Authorization': `Bearer ${stripeKey}` },
+      }).then(r => r.json())
+      const open  = existing?.status === 'requires_payment_method' || existing?.status === 'requires_confirmation'
+      const mine  = !buyer || String(existing?.metadata?.participant_id || '') === String(buyer.id)
+      if (open && mine) {
+        // amount/currency are the only create-only fields we set that can't be
+        // updated; currency never changes, so only amount matters here.
+        const { currency, ...updatable } = params
+        delete updatable['payment_method_types[]']
+        const updated = await stripePost(`payment_intents/${reuseId}`, updatable)
+        if (updated?.client_secret) {
+          return json({
+            clientSecret:    updated.client_secret,
+            paymentIntentId: updated.id,
+            chargeCents:     grossUpForStripe(expectedBase),
+          })
+        }
+      }
+    } catch { /* fall through and create a new intent */ }
+  }
+
+  const pi = await stripePost('payment_intents', params)
   if (!pi.client_secret) {
     return json({ error: pi.error?.message || 'Failed to create payment' }, 400)
   }
 
-  return json({ clientSecret: pi.client_secret, chargeCents: grossUpForStripe(expectedBase) })
+  return json({
+    clientSecret:    pi.client_secret,
+    paymentIntentId: pi.id,
+    chargeCents:     grossUpForStripe(expectedBase),
+  })
 }

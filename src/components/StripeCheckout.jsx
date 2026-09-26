@@ -61,6 +61,7 @@ function PayForm({ amountCents, onPaid, buttonLabel, note }) {
   const elements = useElements()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [fails, setFails] = useState(0)
 
   const pay = async e => {
     e.preventDefault()
@@ -73,6 +74,7 @@ function PayForm({ amountCents, onPaid, buttonLabel, note }) {
       await onPaid(paymentIntent.id)
     } catch (err) {
       setError(err.message)
+      setFails(n => n + 1)
     } finally {
       setBusy(false)
     }
@@ -81,7 +83,21 @@ function PayForm({ amountCents, onPaid, buttonLabel, note }) {
   return (
     <form onSubmit={pay} className="space-y-4">
       <PaymentElement options={{ layout: 'tabs' }} />
-      {error && <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{error}</div>}
+      {error && (
+        <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">
+          {error}
+          {/* Repeated attempts on one card trip Stripe's fraud checks, which
+              declines an otherwise good card. Steer them off that path. */}
+          {fails >= 2 && (
+            <p className="mt-2 text-red-200/80">
+              Repeated tries on the same card can get it blocked automatically. Try a different card,
+              or email{' '}
+              <a href="mailto:info@greenmileboosters.org" className="underline">info@greenmileboosters.org</a>{' '}
+              and we'll get you taken care of.
+            </p>
+          )}
+        </div>
+      )}
       <Button size="lg" className="w-full" disabled={busy || !stripe}>
         {busy ? 'Processing…' : (buttonLabel || `Pay ${fmtUSD(amountCents)} Securely`)}
       </Button>

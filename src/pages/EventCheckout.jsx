@@ -11,6 +11,12 @@ import StripeCheckout, { STRIPE_READY, fmtUSD as fmt, FeeBreakdown, grossUpForSt
 // When the event has a matching raffle on the same date, the raffle is offered
 // as an add-on so one card charge covers both; the server re-prices everything
 // from the database and records a registration row per campaign.
+//
+// Two steps on purpose. The PaymentIntent is created once, when the buyer taps
+// Continue to Payment — never on a render or a keystroke. Backing up to change
+// the ticket count updates that same intent instead of making another, so one
+// purchase leaves exactly one intent in Stripe. (Creating one per keystroke
+// tripped Stripe Radar's card-velocity rule and declined real buyers.)
 
 export default function EventCheckout() {
   const { id } = useParams()
@@ -93,7 +99,11 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
     address: '', city: '', state: 'CA', zip: '',
     emailOptIn: true,
   })
+  const [step, setStep] = useState('details')   // details | pay
   const [clientSecret, setClientSecret] = useState(null)
+  const [piId, setPiId] = useState(null)
+  const [prepping, setPrepping] = useState(false)
+  const [payError, setPayError] = useState('')
   const [done, setDone] = useState(false)
 
   const mainCents  = (campaign.price_cents || 0) * qty
@@ -106,29 +116,36 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
 
   const addonId = addonAvailable && addonQty > 0 ? addonCampaign.id : null
 
-  // Create the payment intent once the details are complete. Re-runs when the
-  // quantities change so the charge always matches what's on screen.
-  useEffect(() => {
-    if (!STRIPE_READY || !formValid || totalCents <= 0) { setClientSecret(null); return }
-    let cancelled = false
-    setClientSecret(null)
-    fetch('/api/events/payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        campaignId: campaign.id,
-        amount_cents: totalCents,
-        ticketQty: qty,
-        addonCampaignId: addonId,
-        addonQty: addonId ? addonQty : 0,
-      }),
-    })
-      .then(r => r.json())
-      .then(d => { if (!cancelled) setClientSecret(d.clientSecret || null) })
-      .catch(() => { if (!cancelled) setClientSecret(null) })
-    return () => { cancelled = true }
-  }, [campaign.id, totalCents, qty, addonId, addonQty, formValid])
+  // One intent per purchase. Created on Continue, reused (server-side update)
+  // if they come back and change quantities.
+  const goToPayment = async () => {
+    if (!STRIPE_READY || !formValid || totalCents <= 0) return
+    setPayError(''); setPrepping(true)
+    try {
+      const res = await fetch('/api/events/payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          campaignId: campaign.id,
+          amount_cents: totalCents,
+          ticketQty: qty,
+          addonCampaignId: addonId,
+          addonQty: addonId ? addonQty : 0,
+          paymentIntentId: piId,
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok || !d.clientSecret) throw new Error(d.error || 'Could not start payment. Please try again.')
+      setClientSecret(d.clientSecret)
+      setPiId(d.paymentIntentId || piId)
+      setStep('pay')
+    } catch (err) {
+      setPayError(err.message)
+    } finally {
+      setPrepping(false)
+    }
+  }
 
   const register = async (paymentIntentId = null) => {
     const res = await fetch('/api/registrations/event', {
@@ -178,6 +195,15 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
   return (
     <Shell title={campaign.title} subtitle={campaign.event_date ? `${campaign.event_date}${campaign.location ? ` · ${campaign.location}` : ''}` : null} wide>
       <div className="space-y-5">
+        {!STRIPE_READY && (
+          <div className="rounded-xl bg-field-900/40 border border-field-500/30 p-5 text-sm text-zinc-300 leading-relaxed">
+            Online card payment is being connected. To buy tickets right now, email{' '}
+            <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
+            and we'll take care of you.
+          </div>
+        )}
+
+        {step === 'details' ? (<>
         {/* Quantity + total */}
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4">
           <div>
@@ -244,28 +270,50 @@ function CheckoutForm({ campaign, addonCampaign, me }) {
           <span className="text-sm text-zinc-300">Keep me in the loop — email me about future Green Mile Boosters events and promotions.</span>
         </label>
 
-        {/* Payment — card only */}
-        {STRIPE_READY ? (
-          formValid
-            ? (clientSecret
-                ? <>
-                    <FeeBreakdown baseCents={totalCents} label={addonQty > 0 ? 'Tickets + raffle' : `${qty} Ticket${qty > 1 ? 's' : ''}`} />
-                    <StripeCheckout
-                      clientSecret={clientSecret}
-                      amountCents={grossUpForStripe(totalCents)}
-                      onPaid={register}
-                      buttonLabel={`Pay ${fmt(grossUpForStripe(totalCents))}`}
-                    />
-                  </>
-                : <Loading label="Preparing secure payment…" />)
-            : <p className="text-sm text-zinc-500">Fill in your details above to continue to card payment.</p>
-        ) : (
-          <div className="rounded-xl bg-field-900/40 border border-field-500/30 p-5 text-sm text-zinc-300 leading-relaxed">
-            Online card payment is being connected. To buy tickets right now, email{' '}
-            <a href="mailto:info@greenmileboosters.org" className="text-field-400 hover:text-field-300">info@greenmileboosters.org</a>{' '}
-            and we'll take care of you.
+        {/* Step 1 → 2. No payment intent exists until this is tapped. */}
+        {STRIPE_READY && (<>
+          <FeeBreakdown baseCents={totalCents} label={addonQty > 0 ? 'Tickets + raffle' : `${qty} Ticket${qty > 1 ? 's' : ''}`} />
+          {payError && (
+            <div className="rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm px-4 py-3">{payError}</div>
+          )}
+          <Button size="lg" className="w-full" onClick={goToPayment} disabled={!formValid || prepping || totalCents <= 0}>
+            {prepping ? 'Preparing secure payment…' : `Continue to Payment · ${fmt(grossUpForStripe(totalCents))}`}
+          </Button>
+          {!formValid && <p className="text-sm text-zinc-500 text-center">Fill in your details above to continue to card payment.</p>}
+        </>)}
+        </>) : (<>
+          {/* Step 2: pay. Quantities are locked here so the amount on the card
+              can't drift from the intent that was created. */}
+          <div className="rounded-xl bg-charcoal-900 border border-white/[0.07] px-5 py-4 text-sm">
+            <div className="flex items-center justify-between text-zinc-400">
+              <span>{qty} × {campaign.title}</span><span className="text-zinc-200">{fmt(mainCents)}</span>
+            </div>
+            {addonQty > 0 && (
+              <div className="flex items-center justify-between text-zinc-400 mt-2">
+                <span>{addonQty} × {addonCampaign.title}</span><span className="text-zinc-200">{fmt(addonCents)}</span>
+              </div>
+            )}
+            <div className="mt-3 pt-3 border-t border-white/[0.07] text-xs text-zinc-500">
+              {form.firstName} {form.lastName} · {form.email || 'no email'}
+            </div>
           </div>
-        )}
+
+          <FeeBreakdown baseCents={totalCents} label={addonQty > 0 ? 'Tickets + raffle' : `${qty} Ticket${qty > 1 ? 's' : ''}`} />
+
+          {clientSecret
+            ? <StripeCheckout
+                clientSecret={clientSecret}
+                amountCents={grossUpForStripe(totalCents)}
+                onPaid={register}
+                buttonLabel={`Pay ${fmt(grossUpForStripe(totalCents))}`}
+              />
+            : <Loading label="Preparing secure payment…" />}
+
+          <button type="button" onClick={() => setStep('details')}
+            className="w-full text-sm text-zinc-400 hover:text-field-400 py-1">
+            Back to edit tickets or details
+          </button>
+        </>)}
 
         <p className="text-xs text-zinc-600 text-center">
           You'll get an email confirmation with your ticket details. The Green Mile Boosters is a
